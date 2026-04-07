@@ -14,7 +14,7 @@ Skill 的设计理念是**可组合、可移植、按需加载**。多个 Skill 
 
 | Skill | 说明 |
 |-------|------|
-| [**kaizike-writer**](./kaizike-writer/) | 卡兹克公众号长文写作 Skill，包含完整的写作风格规则、四层自检体系、内容方法论和风格示例库 |
+| [**khazix-writer**](./khazix-writer/) | 卡兹克公众号长文写作 Skill，包含完整的写作风格规则、四层自检体系、内容方法论和风格示例库 |
 
 ## 安装
 
@@ -28,8 +28,9 @@ Skill 的设计理念是**可组合、可移植、按需加载**。多个 Skill 
 
 ### 手动安装
 
-1. 在本仓库的 [Releases](https://github.com/KKKKhazix/khazix-skills/releases) 页面下载对应 Skill 的 `.skill` 安装包
-2. 将 `.skill` 文件拖动到对应工具的 Skills 目录下
+1. 如果仓库已经发布了对应 Skill 的 `.skill` 安装包，优先在 [Releases](https://github.com/KKKKhazix/khazix-skills/releases) 页面下载
+2. 如果仓库暂未提供 `.skill` 安装包，直接将对应 Skill 文件夹（例如 `khazix-writer/`）复制到对应工具的 Skills 目录下
+3. 保持 Skill 文件夹名称和目录结构不变
 
 各工具的 Skills 安装路径：
 
