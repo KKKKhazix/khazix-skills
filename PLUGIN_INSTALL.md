@@ -14,18 +14,16 @@
 
 **觸發詞：** 橫縱分析、研究一下、幫我分析、深度研究、做個研究、調研一下、竞品分析
 
-## 安裝方法
+## 安装方法
 
-### 方式 1：從 GitHub 直接安裝
-
-```bash
-claude plugin install https://github.com/KKKKhazix/khazix-skills
-```
-
-### 方式 2：從 Fork 安裝（如果原倉庫尚未合併 plugin.json）
+### 推荐：Claude Code 插件市场（一键安装，自动更新）
 
 ```bash
-claude plugin install https://github.com/JarvixGaby/khazix-skills
+# 添加到插件市场
+claude plugin marketplace add KKKKhazix/khazix-skills
+
+# 安装插件
+claude plugin install khazix-skills@KKKKhazix
 ```
 
 ## 使用方法

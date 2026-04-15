@@ -24,12 +24,14 @@
 
 ### Skill 安装方式
 
-**方式 1：通过 Claude Code Plugin 安装（推荐）**
-
-Claude Code 支持通过 plugin 系统一键安装并自动更新：
+**推荐：Claude Code 插件市场（一键安装，自动更新）**
 
 ```bash
-claude plugin install https://github.com/KKKKhazix/khazix-skills
+# 添加到插件市场
+claude plugin marketplace add KKKKhazix/khazix-skills
+
+# 安装插件
+claude plugin install khazix-skills@KKKKhazix
 ```
 
 安装后可以直接使用：
