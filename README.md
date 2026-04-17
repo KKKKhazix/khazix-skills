@@ -32,6 +32,14 @@
 安装这个 skill：https://github.com/KKKKhazix/khazix-skills
 ```
 
+**通过 npx 安装**
+
+在本机终端执行：
+
+```bash
+npx skills add KKKKhazix/khazix-skills
+```
+
 **手动安装**
 
 1. 在本仓库的 [Releases](https://github.com/KKKKhazix/khazix-skills/releases) 页面下载对应 Skill 的 `.skill` 安装包
