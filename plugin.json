@@ -1,0 +1,21 @@
+{
+  "name": "khazix-skills",
+  "version": "1.0.0",
+  "description": "數字生命卡兹克（Khazix）的 Claude Code 技能集合，包含公眾號寫作和橫縱分析法深度研究",
+  "author": "KKKKhazix",
+  "repository": "https://github.com/KKKKhazix/khazix-skills",
+  "homepage": "https://github.com/KKKKhazix/khazix-skills",
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "khazix-writer",
+      "path": "khazix-writer/SKILL.md",
+      "description": "數字生命卡兹克的公眾號長文寫作 skill，用於撰寫公眾號文章、長文創作"
+    },
+    {
+      "name": "hv-analysis",
+      "path": "hv-analysis/SKILL.md",
+      "description": "橫縱分析法（Horizontal-Vertical Analysis）深度研究 skill，用於系統性研究產品、公司、概念或技術"
+    }
+  ]
+}

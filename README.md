@@ -24,7 +24,26 @@
 
 ### Skill 安装方式
 
-**通过 Agent 安装**
+**推荐：Claude Code 插件市场（一键安装，自动更新）**
+
+```bash
+# 添加到插件市场
+claude plugin marketplace add KKKKhazix/khazix-skills
+
+# 安装插件
+claude plugin install khazix-skills@KKKKhazix
+```
+
+安装后可以直接使用：
+- `/khazix-writer` - 公众号长文写作
+- `/hv-analysis` - 横纵分析法深度研究
+
+更新 plugin：
+```bash
+claude plugin update khazix-skills
+```
+
+**方式 2：通过 Agent 对话安装**
 
 在 Claude Code、Codex、OpenClaw 等支持 Skill 的 Agent 中，直接对话：
 
@@ -32,7 +51,7 @@
 安装这个 skill：https://github.com/KKKKhazix/khazix-skills
 ```
 
-**手动安装**
+**方式 3：手动安装**
 
 1. 点仓库右上角 **Code → Download ZIP**，或者 `git clone https://github.com/KKKKhazix/khazix-skills.git`
 2. 把你想装的 Skill 文件夹（比如 `hv-analysis/`）整个复制到对应工具的 Skills 目录下
