@@ -178,8 +178,8 @@
 
 **手动安装**
 
-1. 在本仓库的 [Releases](https://github.com/KKKKhazix/khazix-skills/releases) 页面下载对应 Skill 的 `.skill` 安装包
-2. 将 `.skill` 文件拖动到对应工具的 Skills 目录下
+1. 点仓库右上角 **Code → Download ZIP**，或者 `git clone https://github.com/KKKKhazix/khazix-skills.git`
+2. 把你想装的 Skill 文件夹（比如 `hv-analysis/`）整个复制到对应工具的 Skills 目录下
 
 各工具的 Skills 安装路径：
 
@@ -188,6 +188,13 @@
 | Claude Code | `~/.claude/skills/` |
 | OpenClaw | `~/.openclaw/skills/` |
 | Codex | `~/.agents/skills/` |
+
+例如装 hv-analysis 到 Claude Code：
+
+```bash
+git clone https://github.com/KKKKhazix/khazix-skills.git
+cp -r khazix-skills/hv-analysis ~/.claude/skills/
+```
 
 ## License
 
