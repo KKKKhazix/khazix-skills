@@ -15,3 +15,6 @@ agent-plan/
 
 # Local Claude Code project settings
 .claude/settings.local.json
+
+# Internal project instructions (not for public repo)
+CLAUDE.md
