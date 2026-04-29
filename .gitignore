@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Syncthing / cloud-sync conflict copies
+.sync-conflict-*
+
+# Local recovery / corrupted git directories
+.git.corrupt-*
+
+# Tessl auto-generated tile files (regenerated on every publish)
+*/tile.json
+
+# Local Claude Code project settings
+.claude/settings.local.json
+
+# Internal project instructions (not for public repo)
+CLAUDE.md
