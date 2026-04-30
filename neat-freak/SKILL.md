@@ -142,6 +142,41 @@ API 速查表、环境变量表、术语表是高频查询的结构化信息，*
 
 只列有实际变更的条目。没改的不写。
 
+### 第六步：提交（可选推送）
+
+知识同步本身就是一次"代码变更"——下一个 agent / 同事看到的是你**落盘**的版本，不是文件系统的中间态。让每次 sync 都留下时间戳和 diff，别让"我刚改了什么"只活在对话里。
+
+**按仓库分别处理，每个仓库一次提交**：
+
+1. 列出这次 skill 实际修改 / 新建 / 删除的文件，按仓库分组（一个项目仓库 + 可能的全局配置仓库 + 可能的 agent 记忆仓库）。
+2. 对每个仓库：
+   - 如果不是 git 仓库（`git rev-parse --git-dir` 失败），跳过，在结尾列出"未提交：<路径>（不是 git 仓库）"。
+   - **只 stage 你这次改的文件**——不要 `git add -A`，不要带上仓库里已有的脏改动。
+   - commit message 格式：`docs(sync): knowledge cleanup <YYYY-MM-DD>`，body 是该仓库的变更摘要。
+   - 如果你的改动文件跟已有脏改动有重叠，**停下来报告给用户**，不要强行 commit。
+3. **commit 完才询问 push**——commit 是本地动作，push 是仓库外可见的动作，两步分开：
+
+   ```
+   ## 已提交
+   - <repo-A> a1b2c3d — 同步 X / Y
+   - <repo-B> e4f5g6h — 更新 docs/architecture.md
+   未提交：~/.claude/projects/<...>/memory/（不在 git 仓库内）
+
+   要 push 哪些？
+     [a] <repo-A> only
+     [b] <repo-B> only
+     [c] 全部
+     [d] 都不 push
+   ```
+
+   **默认不 push**——push 是外部可见的动作，必须用户明确同意（`[c]` 或 `[a]/[b]`）。
+
+**特例 — 全局配置**（`~/.claude/CLAUDE.md`、`~/.codex/AGENTS.md` 等）：只在用户明确把它纳入版本控制时才 commit；否则只编辑文件，不 commit、不 push。
+
+**特例 — agent 记忆系统**：Claude Code 的 `~/.claude/projects/<...>/memory/` 默认不在 git 仓库里，按"未提交"列出即可，**不要**主动 `git init`。
+
+**Pre-existing 脏改动**：如果项目仓库里有这次 skill 没碰过的脏文件，**不要**打包进 sync commit。在摘要里 flag 一句"该仓库另有 N 个未提交改动，你自己看"，让用户自行处理。
+
 ## 特殊情况
 
 **项目还没有 README 或 CLAUDE.md/AGENTS.md**：判断项目是不是到了"有可运行代码"的阶段。是 → 创建。还在 vibe 阶段 → 跳过，但在摘要里提一句。
