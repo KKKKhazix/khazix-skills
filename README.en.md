@@ -182,7 +182,7 @@ Lets any SKILL.md-supporting agent pull AI HOT's daily report and all AI news fr
 - Pull the selected items stream (daily editorial candidate pool)
 - Pull by category (models / products / industry / papers / tips)
 - Pull by time window (last N days)
-- Company-dimension queries ("recent OpenAI releases")
+- Keyword / company / topic search ("recent OpenAI releases", "Sora-related", "RAG papers")
 
 **How to trigger** (Chinese — the underlying API is Chinese-curated)
 

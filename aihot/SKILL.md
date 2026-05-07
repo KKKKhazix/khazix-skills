@@ -5,7 +5,7 @@ description: AI HOT (aihot.virxact.com) 中文 AI 资讯查询 Skill。当用户
 
 # AI HOT Skill
 
-让 Agent 用最自然的中文查询拿到 aihot.virxact.com 上每天的 AI HOT 日报和全部 AI 动态，不需要打开浏览器。遵循 [Agent Skills](https://agentskills.io) 标准，跨 Claude Code / Codex CLI / Cursor / Gemini CLI / OpenCode / 任何兼容平台可用。
+让 Agent 用最自然的中文查询拿到 aihot.virxact.com 上每天的 AI HOT 日报和全部 AI 动态，不需要打开浏览器。SKILL.md 标准格式，跨 Claude Code / Codex CLI / Cursor / Gemini CLI / OpenCode / 任何兼容平台可用。
 
 线上：https://aihot.virxact.com（公开匿名可访，无需 token）
 
@@ -30,9 +30,10 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/daily"
 | "昨天/前天 AI 日报"、"看下 5 月 6 号的 AI HOT" | `GET /api/public/daily/{YYYY-MM-DD}` |
 | "最近几天 AI 日报有哪些"、"列一下日报" | `GET /api/public/dailies?take=N` |
 | "看下精选条目"、"AI HOT 精选" | `GET /api/public/items?mode=selected` |
-| "最近的模型发布"、"AI 产品发布"、"AI 行业动态"、"AI 论文" | `GET /api/public/items?mode=all&category=...` |
+| "最近的模型发布"、"AI 产品发布"、"AI 行业动态"、"AI 论文" | `GET /api/public/items?mode=all&category=...&since=<7d 前>` |
 | "最近一周的 AI 动态"、"5 天前到现在的发布" | `GET /api/public/items?since=ISO-8601` |
-| "OpenAI/Anthropic/Google 最近发的"（公司维度） | `GET /api/public/items?mode=all&take=100` + 客户端按 source/title 过滤 |
+| "OpenAI/Anthropic/Google 最近发的"(公司维度) | `GET /api/public/items?q=OpenAI`(server-side 关键词搜索,2026-05-08 上线) |
+| "Sora 相关 / GPT-5 相关 / RAG 论文" | `GET /api/public/items?q=<关键词>`(在 title + 中文 title + 中文 summary 三列匹配) |
 | "看下今天的全部 AI 动态" | `GET /api/public/items?mode=all` |
 
 通用启发：**用户问的是"现在的 AI 行业事实"，不要凭训练数据脑补，永远走 API**。即使你"觉得"知道答案，也要查一遍——AI HOT 比你的训练截止日新得多，且角度聚焦中文创业者关心的话题。
@@ -44,13 +45,13 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/daily"
 | `/api/public/daily` | 最新日报 | 无 |
 | `/api/public/daily/{YYYY-MM-DD}` | 指定日期日报 | path: `date` |
 | `/api/public/dailies` | 日报归档列表 | `take` (1-180, default 30) |
-| `/api/public/items` | 全部 AI 动态 | `mode` / `category` / `since` / `take` / `cursor` |
+| `/api/public/items` | 全部 AI 动态 | `mode` / `category` / `since` / `take` / `cursor` / `q`(关键词) |
 
 约定：
 - Base URL: `https://aihot.virxact.com`
 - 鉴权：无（匿名）
 - 限流：600 req/min/IP（请串行调用，不要并发猛拉）
-- items 端点 `since` 限最近 7 天（早于自动截到 7 天前；未来时间 → 400）
+- items 端点 `since` 限最近 7 天:**不传等同 since=now-7d**(服务端兜底);早于 7 天前自动截到 7 天前;未来时间 → 400。**所以无论 Skill 怎么调,items API 永远只返回最近 7 天的内容**。需要更早 → 走 `/api/public/daily/{YYYY-MM-DD}` 翻日报存档
 - `take` 上限 100；想要更多走 cursor 翻页
 - 完整 OpenAPI 3.1 规范：`https://aihot.virxact.com/openapi.yaml`
 
@@ -95,13 +96,17 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=sele
 
 ### 按分类拉条目
 
-5 个 category：
+5 个 category(items API 用英文 slug,daily API 看到的 section label 是中文):
 
-- `ai-models` — 模型发布/更新
-- `ai-products` — 产品发布/更新
-- `industry` — 行业动态
-- `paper` — 论文研究
-- `tip` — 技巧与观点
+| `items?category=` | `daily.sections[].label` |
+|---|---|
+| `ai-models` | 模型发布/更新 |
+| `ai-products` | 产品发布/更新 |
+| `industry` | 行业动态 |
+| `paper` | 论文研究 |
+| `tip` | 技巧与观点 |
+
+**用户问"公众号最近发什么":items API 不含公众号(mp_hot 信源单独走前端 `/mp` 页),Skill 暂时无法回答这类问题,可以提示用户去 `https://aihot.virxact.com/mp` 看公众号爆文页**。
 
 ```bash
 # 例：拉最近 50 条 AI 论文
@@ -114,16 +119,25 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=sele
 
 ### 按时间窗口拉条目（最近 N 天）
 
+> **关键规则**:用户问"**最近** X"(最近的模型发布 / 最近 AI 论文 / 最近 OpenAI 等)时,需要带 `since` 参数把窗口收窄到用户实际意图(说"最近 3 天" 就 3d,"昨天" 就 1d,"最近一周" 就 7d)。
+>
+> **服务端兜底**:items API 服务端默认 `since=now-7d`(硬上限,保护服务器),所以即使 Skill 完全不带 since 也只会返回最近 7 天的内容,不会拉到几个月前的老条目。但**仍建议显式带 since**:① 用户问"最近 3 天" 时显式 3d 比让服务端默认 7d 更精确 ② 输出元信息可以写人话级时间窗 ③ 跟用户公开宣传的"最长 7 天"对齐意图清晰。
+
 ```bash
-# 拉最近 3 天的全部动态（不带 mode 默认 all）
-since=$(date -u -v-3d +%Y-%m-%dT%H:%M:%SZ)         # macOS
-# since=$(date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)   # Linux
+# 拉最近 7 天的全部模型发布(用户问"最近的模型发布")
+since=$(date -u -v-7d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=all&category=ai-models&since=$since&take=100"
+
+# 拉最近 3 天的全部动态(用户明确说"最近 3 天")
+since=$(date -u -v-3d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
 curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?since=$since&take=100"
 ```
 
+**例外**:用户明确说"全量"/"所有"/"完整列表"/"包括老的",可以不带 since;或者用户问"看下精选"(看精选池而非时间窗)也可以不带。但只要句子里有"最近 / 最新 / 这两天 / 这周",**默认带 since**。
+
 ### 翻页（cursor）
 
-`/api/public/items` 响应里有 `nextCursor`（base64url 字符串），下次请求把它原样塞进 `cursor` 参数即可。
+`/api/public/items` 响应里有 `nextCursor`（opaque token），下次请求把它原样塞进 `cursor` 参数即可。
 
 ```bash
 # 第 1 页
@@ -135,19 +149,32 @@ cursor=$(echo "$resp1" | jq -r '.nextCursor')
 curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=all&take=100&cursor=$cursor"
 ```
 
-`hasNext = false` 或 `nextCursor = null` 时停止翻页。**cursor 是不透明 base64url，不要尝试解析或递增**。
+`hasNext = false` 或 `nextCursor = null` 时停止翻页。**cursor 是不透明 token,视作黑盒,不要尝试解析、递增、或跨端点复用**。
 
-### 公司维度查询（"OpenAI 最近发的"）
+### 关键词搜索（"OpenAI 最近发的" / "Sora 相关" / "RAG 论文"）
 
-API 不直接支持 keyword search，需要先拉一批再客户端过滤：
+API 直接支持 server-side 关键词搜索 — `q` 参数在 `title` + 中文 `title` + 中文 `summary` 三列上 ILIKE 匹配,走 PostgreSQL pg_trgm GIN 索引(2-6ms)。**不要再走"拉一批 + 客户端 jq grep"模式** — 那只能看到前 100 条池子里的命中,关键词若在 100 条外完全找不到。
 
 ```bash
-# 拉最近 100 条全部动态，本地用 jq 过滤含 "OpenAI" 的
-curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=all&take=100" \
-  | jq '.items[] | select((.title // "") | test("OpenAI"; "i")) // select((.source // "") | test("OpenAI"; "i"))'
+# 找 OpenAI 最近发的(覆盖全池,不仅前 100)
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?q=OpenAI&take=30"
+
+# 找 Sora 相关的所有 AI 动态(任何包含 Sora 的标题或摘要)
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?q=Sora"
+
+# 找 RAG 论文(category 限定 + 关键词)
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?category=paper&q=RAG&take=30"
+
+# 关键词 + 时间窗(Anthropic 最近 3 天的精选)
+SINCE=$(date -u -v-3d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&q=Anthropic&since=$SINCE"
 ```
 
-如果一页 100 条还过滤不出，按 cursor 翻 2-3 页（注意限流 600/min，翻页之间加点间隔）。
+`q` 约束:
+- 至少 2 个字符(单字符 GIN trigram 退化为全表扫,服务端会视作不搜索)
+- 最长 200 字(超出自动截断)
+- 跟其它参数(mode/category/since/take/cursor)正交叠加,可以"按精选 + 论文 + 关键词 + 7 天内"组合
+- 跟其它请求共享 600r/m 限流
 
 ## 返回数据形态
 
@@ -349,8 +376,9 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=all&
 - 不要把摘要（`summary`）当原文引用 — 摘要由 LLM 生成，引用需要回 `url` / `sourceUrl` 核对
 - 不要做高频轮询 — 日报每天 08:00 才更新一次，items 端点 5 分钟服务端缓存，用户问相同问题时不需要重新调 API
 - 不要并发猛拉翻页 — 串行 + 自然间隔
-- 不要尝试解析 / 递增 cursor — 它是不透明 base64url
-- 不要用 keyword search（API 不支持），公司维度查询走"拉一批 + 客户端过滤"
+- 不要尝试解析 / 递增 / 跨端点复用 cursor — 它是不透明 token,内部编码格式不稳定,改了不通知
+- 公司维度 / 关键词查询用 server-side `?q=<词>`,不要走"拉一批 + 客户端 jq grep"(那只能看到前 100 条池子,会漏)
+- **用户问"最近 N 天 X" 时显式带 `since=<N天前>`**(意图明确 + 元信息能写人话时间窗)。不带 since 服务端默认 7d 兜底,所以不会拉到老条目,但用户问"最近 3 天" 时让服务端默认 7d 会多带 4 天的内容
 - **不要在用户输出里暴露端点路径 / raw 参数 / 限流 / 缓存 TTL / cursor / hasNext 等基础设施细节** — 这些是给开发者看的，用户看不懂。详见上方"给用户的输出格式 → 副标题／元信息只写人话"
 - **不要在压缩 / 跨日 / 跨版块合并输出时丢掉每条的 sourceUrl** — 即使你为篇幅把 3 个日报合并成 5 类总结，每条 item 也必须保留 url（标题后或单独一行）。用户看到一条没 URL 就追溯不到原文，这条信息等于不可信
 - **不要把"端点路径 / 调用细节"作为输出的引用源** — 引用源就写 `<source>`（OpenAI 官网 / Anthropic Newsroom / X：Berry Xia 这种），不是 `GET /api/public/items?...`
