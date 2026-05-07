@@ -26,17 +26,26 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/daily"
 
 ## 什么时候用
 
+> **路由优先级（第一原则）**：**默认走精选** `items?mode=selected`——它是 AI HOT 每天精挑细选的"主菜单"，覆盖用户关心的事且数据新鲜。
+>
+> - **仅当用户在话里明确说出"日报"** 二字才走 `daily`（编辑成品，按 UTC 整日切片，跟"过去 24 小时 / 今天"等滚动窗口对不上）
+> - **仅当用户明确说"全部 / 完整 / 所有 / 全量"** 才走 `mode=all`（含未精选的次要条目，量大但杂）
+> - **"今天 AI 圈"、"过去 24 小时大新闻"、"最近 AI 圈有啥"** 等宽问题 = **默认精选 + 时间窗（since）**，不要默认走日报或全部
+>
+> 这是为了对齐用户的语义优先级：精选是主菜单，日报和全部是用户特意点单的备选，不应抢默认。
+
 | 用户在说 | 应该走的接口 |
 |---|---|
-| "今天 AI 圈有什么"、"AI 日报"、"今天的 AI HOT" | `GET /api/public/daily`（最新日报） |
-| "昨天/前天 AI 日报"、"看下 5 月 6 号的 AI HOT" | `GET /api/public/daily/{YYYY-MM-DD}` |
-| "最近几天 AI 日报有哪些"、"列一下日报" | `GET /api/public/dailies?take=N` |
+| **默认（宽问题）**："今天 AI 圈有什么"、"过去 24 小时大新闻"、"最近 AI 圈"、"AI 有啥新东西" | `GET /api/public/items?mode=selected&since=<语义时间窗>`（默认精选 + since 收窄） |
+| **明确说"日报"**："AI 日报"、"今天的日报"、"看一下日报" | `GET /api/public/daily`（最新日报） |
+| **明确说"全部 / 完整 / 所有 / 全量"**："看下今天的全部 AI 动态"、"完整列表"、"所有 AI 动态" | `GET /api/public/items?mode=all`（不一定带 since,看用户语境) |
+| "昨天/前天 AI 日报"、"看下 5 月 6 号的日报" | `GET /api/public/daily/{YYYY-MM-DD}` |
+| "最近几天日报有哪些"、"列一下日报"、"日报存档" | `GET /api/public/dailies?take=N` |
 | "看下精选条目"、"AI HOT 精选" | `GET /api/public/items?mode=selected` |
-| "最近的模型发布"、"AI 产品发布"、"AI 行业动态"、"AI 论文" | `GET /api/public/items?mode=all&category=...&since=<7d 前>` |
-| "最近一周的 AI 动态"、"5 天前到现在的发布" | `GET /api/public/items?since=ISO-8601` |
+| "最近的模型发布"、"AI 产品发布"、"AI 行业动态"、"AI 论文" | `GET /api/public/items?mode=selected&category=...&since=<7d 前>`（默认精选 + 类别） |
+| "最近一周的 AI 动态"、"5 天前到现在的发布" | `GET /api/public/items?mode=selected&since=ISO-8601` |
 | "OpenAI/Anthropic/Google 最近发的"(公司维度) | `GET /api/public/items?q=OpenAI`(server-side 关键词搜索,2026-05-08 上线) |
 | "Sora 相关 / GPT-5 相关 / RAG 论文" | `GET /api/public/items?q=<关键词>`(在 title + 中文 title + 中文 summary 三列匹配) |
-| "看下今天的全部 AI 动态" | `GET /api/public/items?mode=all` |
 
 通用启发：**用户问的是"现在的 AI 行业事实"，不要凭训练数据脑补，永远走 API**。即使你"觉得"知道答案，也要查一遍——AI HOT 比你的训练截止日新得多，且角度聚焦中文创业者关心的话题。
 
@@ -59,9 +68,25 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/daily"
 
 ## 工作流
 
-### 拉最新日报（默认路径，宽问题首选）
+### 默认路径：拉精选 + 时间窗（宽问题首选）
 
-日报是 AI HOT 的"标题层"——每天北京时间 08:00 自动生成，按主题分版块。回答 "今天 AI 圈有什么" 这类宽问题时**优先调日报**，因为它已经把当天信息按主题打包好。
+精选 = AI HOT 每天精挑细选的"主菜单"——覆盖所有用户关心的 AI 大事，按发布时间倒序。**任何"今天 AI 圈"、"过去 24 小时大新闻"、"最近 AI 有啥"等宽问题，默认走这个**——比起日报：① 时间窗自由（24 小时 / 3 天 / 1 周想多窄就多窄，跟用户语义对齐）② 数据新鲜（实时滚动而非按 UTC 整日切片）③ 质量仍高（`aiSelected=true` 的池子，不含次要条目）。
+
+```bash
+# 拉最近 24 小时精选（用户问"过去 24 小时大新闻"）
+since=$(date -u -v-24H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&since=$since&take=50"
+
+# 拉最近 50 条精选（用户问"看下精选" / 不带明确时间窗）
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&take=50" \
+  | jq '.items[] | {title, source, publishedAt, url}'
+```
+
+### 拉日报（用户明确说"日报"时）
+
+**触发关键词**：句子里出现"日报"二字（"AI 日报"、"今天的日报"、"看下日报"、"5 月 6 号的日报"）。**没有"日报"二字不要走这个**——日报是 UTC 0 点切片的固定一日成品，跟"过去 24 小时 / 今天"等滚动时间窗对不上。
+
+日报是 AI HOT 的"标题层"——每天北京时间 08:00 自动生成，按主题分版块（5 个固定版块）。已有"主编点评"导语段落，是按主题打包后的成品。
 
 ```bash
 # 拉今日（或最新可用的）日报
@@ -86,14 +111,14 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/dailies?take=14
   | jq '.items[] | {date, leadTitle}'
 ```
 
-### 拉精选条目（用户问"看下精选 / AI HOT 精选"时）
+### 拉全部（用户明确说"全部 / 完整 / 所有 / 全量"时）
 
-精选 = 每日精编候选池，比日报更细粒度（含未进日报的次要条目）。日报是按主题打包后的成品；精选是原始流。
+**触发关键词**：句子里出现"全部"、"完整"、"所有"、"全量"、"包括老的"——用户主动想看精选之外的次要条目（被精选筛掉但仍相关的内容）。**没有这些关键词不要走 mode=all**——精选已经覆盖大部分用户关心的事，全部池子量大但杂。
 
 ```bash
-# 拉最近 50 条精选
-curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&take=50" \
-  | jq '.items[] | {title, source, publishedAt, url}'
+# 拉最近 24 小时全部 AI 动态（用户问"看下今天全部的 AI 动态"）
+since=$(date -u -v-24H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=all&since=$since&take=100"
 ```
 
 ### 按分类拉条目
@@ -111,12 +136,15 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=sele
 **用户问"公众号最近发什么":items API 不含公众号(mp_hot 信源单独走前端 `/mp` 页),Skill 暂时无法回答这类问题,可以提示用户去 `https://aihot.virxact.com/mp` 看公众号爆文页**。
 
 ```bash
-# 例：拉最近 50 条 AI 论文
-curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?category=paper&take=50" \
+# 例：拉最近 50 条 AI 论文（默认精选 + paper 类别）
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&category=paper&take=50" \
   | jq '.items[] | {title, source, publishedAt, url}'
 
 # 例：精选里的模型发布
 curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&category=ai-models&take=20"
+
+# 例外：用户明确说"全部论文 / 所有模型发布"才走 mode=all
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=all&category=paper&take=100"
 ```
 
 ### 按时间窗口拉条目（最近 N 天）
@@ -126,16 +154,16 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=sele
 > **服务端兜底**:items API 服务端默认 `since=now-7d`(硬上限,保护服务器),所以即使 Skill 完全不带 since 也只会返回最近 7 天的内容,不会拉到几个月前的老条目。但**仍建议显式带 since**:① 用户问"最近 3 天" 时显式 3d 比让服务端默认 7d 更精确 ② 输出元信息可以写人话级时间窗 ③ 跟用户公开宣传的"最长 7 天"对齐意图清晰。
 
 ```bash
-# 拉最近 7 天的全部模型发布(用户问"最近的模型发布")
+# 拉最近 7 天的精选模型发布(用户问"最近的模型发布")
 since=$(date -u -v-7d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
-curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=all&category=ai-models&since=$since&take=100"
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&category=ai-models&since=$since&take=100"
 
-# 拉最近 3 天的全部动态(用户明确说"最近 3 天")
+# 拉最近 3 天的精选动态(用户明确说"最近 3 天")
 since=$(date -u -v-3d +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '3 days ago' +%Y-%m-%dT%H:%M:%SZ)
-curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?since=$since&take=100"
+curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=selected&since=$since&take=100"
 ```
 
-**例外**:用户明确说"全量"/"所有"/"完整列表"/"包括老的",可以不带 since;或者用户问"看下精选"(看精选池而非时间窗)也可以不带。但只要句子里有"最近 / 最新 / 这两天 / 这周",**默认带 since**。
+**例外**:用户明确说"**全量 / 所有 / 完整列表 / 包括老的**" → mode 切到 `all`,可以不带 since;用户问"**看下精选**"(看精选池而非时间窗)mode 保持 `selected` 也可以不带 since。但只要句子里有"最近 / 最新 / 这两天 / 这周",**默认带 since + mode=selected**。
 
 ### 翻页（cursor）
 
@@ -374,6 +402,8 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=sele
 
 ## 不要做
 
+- **不要把"今天 AI 圈"、"过去 24 小时大新闻"、"最近 AI 圈有啥"等宽问题路由到 daily** — 这些是滚动时间窗，daily 是 UTC 0 点切片（5/6-5/7 一整天）的固定一日成品，时间精度对不上。**默认走 `mode=selected + since=<语义窗>`**。仅当用户在话里明确说"日报"二字才走 `daily`
+- **不要在用户没说"全部 / 完整 / 所有 / 全量"时默认走 `mode=all`** — 精选已经覆盖大部分用户关心的事，全部池子量大但杂含未精选次要条目。默认 `mode=selected`，只有用户主动点单"全部"才切到 `mode=all`
 - 不要试图猜测 / 编造内容 — 永远以 API 返回为准
 - 不要把摘要（`summary`）当原文引用 — 摘要由 LLM 生成，引用需要回 `url` / `sourceUrl` 核对
 - 不要做高频轮询 — 日报每天 08:00 才更新一次，items 端点 5 分钟服务端缓存，用户问相同问题时不需要重新调 API
