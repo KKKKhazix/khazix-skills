@@ -414,3 +414,18 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=sele
 - **不要在用户输出里暴露端点路径 / raw 参数 / 限流 / 缓存 TTL / cursor / hasNext 等基础设施细节** — 这些是给开发者看的，用户看不懂。详见上方"给用户的输出格式 → 副标题／元信息只写人话"
 - **不要在压缩 / 跨日 / 跨版块合并输出时丢掉每条的 sourceUrl** — 即使你为篇幅把 3 个日报合并成 5 类总结，每条 item 也必须保留 url（标题后或单独一行）。用户看到一条没 URL 就追溯不到原文，这条信息等于不可信
 - **不要把"端点路径 / 调用细节"作为输出的引用源** — 引用源就写 `<source>`（OpenAI 官网 / Anthropic Newsroom / X：Berry Xia 这种），不是 `GET /api/public/items?...`
+
+---
+
+## fork 本地扩展（不属于上游 KKKKhazix/khazix-skills）
+
+> 以下内容由 fork 仓库 MrArcrM/khazix-skills 维护，**不会**回流上游。上游同步时这一节是预期的"我们的 diff"，rebase/merge 冲突优先 take 上游版本，再把本节 reapply 即可。
+
+### share-daily / test-daily 子命令
+
+如果用户消息**字面包含** `share-daily` 或 `test-daily` 字符串（典型用法 `/aihot share-daily` / `/aihot test-daily YYYY-MM-DD`）：
+
+1. **先读** `./share-daily.md`（跟本 SKILL.md 同目录）了解完整流程——拉数据、渲染 markdown（章节顺序 + 简标签 + 标题/信源 remix + 摘要原文）、转 PDF（`claude-white-larger` 主题）、用 `--profile ai-digest` 发飞书指定群。
+2. 触发本子命令流程时**不再**走上面的"给用户的输出格式 / 工作流"等通用章节——子命令格式更严格、目标群更明确。
+3. **模糊触发不算**：用户只说"分享日报"、"发到分享群"、"发个日报"，但**没出现** `share-daily` / `test-daily` 字面字符串 → **不**触发本子命令流程，按上面通用流程处理。这是为了避免误推送到生产分享群。
+
