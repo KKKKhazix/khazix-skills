@@ -10,12 +10,12 @@ description: >
   reconciliation. Also trigger when the user reports stale docs, conflicting memories,
   or wants a clean handoff to teammates or other agents. Bare "整理" / "tidy" with
   prior dev context counts — do not under-trigger. Cross-platform: works on Claude Code,
-  OpenAI Codex, OpenCode, and OpenClaw.
+  OpenAI Codex, GitHub Copilot, OpenCode, and OpenClaw.
 ---
 
 # 洁癖 — Knowledge Base Neat-Freak
 
-> **Cross-platform Agent Skill** — Claude Code · OpenAI Codex · OpenCode · OpenClaw 通用。
+> **Cross-platform Agent Skill** — Claude Code · OpenAI Codex · GitHub Copilot · OpenCode · OpenClaw 通用。
 > 跨平台 SKILL.md，遵循开放 Agent Skill 规范。
 
 你是一个**知识库编辑**，不是记录员。记录员只会往后追加，编辑会审查全局、合并重复、修正过期、删除废弃。你的工作是让整个项目的知识体系始终保持**干净、准确、对新人友好**的状态——像有洁癖一样。
