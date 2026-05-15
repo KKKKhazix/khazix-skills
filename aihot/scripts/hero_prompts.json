@@ -1,0 +1,30 @@
+{
+  "_comment": "AI HOT 早报 hero 基调池。每日按 $DATE hash 抽一条。gen_hero.py 读取本文件。新增/删除基调只改这里。",
+  "_curated_at": "2026-05-15",
+  "_source": "30 张清晨感候选中郭大大选 20",
+  "size": "1792x768",
+  "common_head": "Minimalist hand-drawn illustration in Anthropic Claude blog style:",
+  "common_tail": "bold black outline strokes, flat illustration aesthetic, plenty of empty space, light and airy morning feel, no text no letters no words, ultra wide cinematic 21:9 composition",
+  "candidates": [
+    { "id": "mint-balloon",         "palette": "Mint Green",      "subject": "热气球",   "body": "a single white hot air balloon floating across a soft mint green morning sky with two small fluffy clouds" },
+    { "id": "cornflower-sailboat",  "palette": "Cornflower Blue", "subject": "帆船",     "body": "a small white sailboat drifting on a calm cornflower blue lake at sunrise, gentle ripples" },
+    { "id": "blush-cherryblossom",  "palette": "Blush Pink",      "subject": "樱花",     "body": "a single blooming cherry blossom tree against a soft blush pink morning sky, a few petals falling" },
+    { "id": "mint-bicycle",         "palette": "Mint Green",      "subject": "自行车",   "body": "a single bicycle parked beside a small bush under a soft mint green sky" },
+    { "id": "lilac-balloon",        "palette": "Lilac Purple",    "subject": "热气球",   "body": "a single pastel hot air balloon floating across a soft lilac purple sky at dawn" },
+    { "id": "blush-cat",            "palette": "Blush Pink",      "subject": "猫",       "body": "a single sleeping cat curled up on a small rug under a blush pink morning light" },
+    { "id": "apricot-cottage",      "palette": "Apricot",         "subject": "小屋",     "body": "a tiny cottage on a small hill under a soft warm apricot dawn sky" },
+    { "id": "periwinkle-windmill",  "palette": "Periwinkle",      "subject": "风车",     "body": "a single windmill on a gentle hill under a clear periwinkle blue morning sky" },
+    { "id": "eucalyptus-deer",      "palette": "Eucalyptus",      "subject": "鹿",       "body": "a single small deer standing in profile in a meadow under a soft eucalyptus gray-green sky" },
+    { "id": "seafoam-whale",        "palette": "Seafoam",         "subject": "鲸鱼",     "body": "a friendly whale swimming through clear seafoam green water with a small water spout" },
+    { "id": "pink-bunny",           "palette": "Soft Pink",       "subject": "兔子",     "body": "a single small rabbit sitting on a tiny grass patch under a soft pink morning sky" },
+    { "id": "springgreen-meadow",   "palette": "Spring Green",    "subject": "花田",     "body": "a wide flower meadow under a fresh spring green sky with a few tiny daisies scattered" },
+    { "id": "cornflower-paperboat", "palette": "Cornflower Blue", "subject": "纸船",     "body": "a tiny white paper boat floating on a vast cornflower blue lake with gentle ripples" },
+    { "id": "iris-mountains",       "palette": "Iris Purple",     "subject": "层山",     "body": "layered distant mountain ridges in soft iris purple morning mist with a pale rising sun" },
+    { "id": "mint-runner",          "palette": "Mint Green",      "subject": "跑步者",   "body": "a single jogger running on a path under a fresh mint green morning sky" },
+    { "id": "dawnblue-cyclist",     "palette": "Dawn Blue",       "subject": "骑行者",   "body": "a single cyclist riding down a winding path under a soft dawn blue sky with a small distant hill" },
+    { "id": "seafoam-island",       "palette": "Seafoam",         "subject": "小岛",     "body": "a tiny tropical island with one small palm tree under a calm seafoam green sky" },
+    { "id": "softaqua-fish",        "palette": "Soft Aqua",       "subject": "跃鱼",     "body": "a single playful fish leaping from soft pale aqua water with small splash droplets" },
+    { "id": "dawnmist-mountain",    "palette": "Dawn Mist",       "subject": "晨雾山",   "body": "layered distant mountains in soft pale blue dawn mist with a few wispy clouds" },
+    { "id": "sagemint-balloon",     "palette": "Sage Mint",       "subject": "热气球",   "body": "a single white hot air balloon floating across a soft sage mint sky with a small bird flying nearby" }
+  ]
+}
