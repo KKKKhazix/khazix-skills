@@ -52,7 +52,7 @@ description: |
 > 你需要联网获取信息。使用以下工具：
 > - **WebSearch**：用于搜索发现信息来源，获取摘要和关键词结果
 > - **WebFetch**：当已知具体URL时，用于从页面定向提取内容
-> - 如果用户环境中安装了 web-access skill（检查路径 `/mnt/.claude/skills/web-access/SKILL.md` 是否存在），优先加载它并遵循其指引，它提供更强的浏览器CDP能力
+> - 如果用户环境中安装了 web-access skill（检查路径 `~/.claude/skills/web-access/SKILL.md` 或 `/mnt/.claude/skills/web-access/SKILL.md` 是否存在），优先加载它并遵循其指引，它提供更强的浏览器CDP能力
 > - 搜索策略：先用WebSearch发现信息来源和线索，找到具体URL后用WebFetch深入提取
 > - 多次搜索、多个关键词组合，不要只搜一次就放弃
 > - 一手来源优于二手来源：官方博客 > 权威媒体原创报道 > 转载/聚合
