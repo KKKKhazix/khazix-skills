@@ -1,0 +1,21 @@
+{
+  "name": "khazix-skills",
+  "owner": {
+    "name": "KKKKhazix"
+  },
+  "metadata": {
+    "description": "数字生命卡兹克开源的 AI Skills 合集 — 公众号长文写作与内容创作",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "khazix-skills",
+      "description": "卡兹克公众号长文写作skill，包含写作风格规则、四层自检体系、内容方法论和风格示例库",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./khazix-writer"
+      ]
+    }
+  ]
+}
