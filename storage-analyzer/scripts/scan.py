@@ -153,7 +153,7 @@ def scan_macos():
 
 
 # ======================================================================
-# Windows  (UNTESTED on this build — stdlib only: os, shutil, ctypes)
+# Windows  (Enhanced with system-level cache detection)
 # ======================================================================
 def dir_size_bytes(path):
     """Recursive size in bytes via os.scandir. Skips symlinks and unreadable."""
@@ -201,6 +201,32 @@ def scandir_children(path, min_kb=51200, limit=40):
     return results[:limit]
 
 
+def get_winsxs_size():
+    """Get C:\\Windows\\WinSxS size if accessible."""
+    windir = os.environ.get("SystemRoot", r"C:\Windows")
+    winsxs = os.path.join(windir, "WinSxS")
+    if not os.path.isdir(winsxs):
+        return None
+    try:
+        kb = dir_size_bytes(winsxs) // 1024
+        return {"name": "WinSxS", "path": winsxs, "size_kb": kb, "size_h": human(kb)}
+    except (PermissionError, OSError):
+        return {"name": "WinSxS", "path": winsxs, "size_kb": 0, "size_h": "?", "denied": True}
+
+
+def get_driverstore_size():
+    """Get DriverStore\\FileRepository size if accessible."""
+    windir = os.environ.get("SystemRoot", r"C:\Windows")
+    driverstore = os.path.join(windir, "System32", "DriverStore", "FileRepository")
+    if not os.path.isdir(driverstore):
+        return None
+    try:
+        kb = dir_size_bytes(driverstore) // 1024
+        return {"name": "DriverStore", "path": driverstore, "size_kb": kb, "size_h": human(kb)}
+    except (PermissionError, OSError):
+        return {"name": "DriverStore", "path": driverstore, "size_kb": 0, "size_h": "?", "denied": True}
+
+
 def list_drives_windows():
     drives = []
     import string
@@ -243,6 +269,8 @@ def scan_windows():
     profile = os.environ.get("USERPROFILE", HOME)
     local = os.environ.get("LOCALAPPDATA", os.path.join(profile, "AppData", "Local"))
     roaming = os.environ.get("APPDATA", os.path.join(profile, "AppData", "Roaming"))
+    windir = os.environ.get("SystemRoot", r"C:\Windows")
+
     targets = [
         ("user_profile", profile, 102400),
         ("appdata_local", local, 51200),
@@ -251,10 +279,23 @@ def scan_windows():
         ("downloads", os.path.join(profile, "Downloads"), 51200),
         ("program_files", os.environ.get("ProgramFiles", r"C:\Program Files"), 102400),
         ("program_files_x86", os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), 102400),
+        ("windows_temp", os.path.join(windir, "Temp"), 51200),
+        ("windows_logs", os.path.join(windir, "Logs"), 51200),
+        ("windows_softdist", os.path.join(windir, "SoftwareDistribution", "Download"), 51200),
+        ("windows_installer", os.path.join(windir, "Installer"), 102400),
     ]
     groups = {}
     for key, path, floor in targets:
         groups[key] = scandir_children(path, min_kb=floor)
+
+    # Special system directories
+    winsxs = get_winsxs_size()
+    if winsxs:
+        groups["windows_winsxs"] = [winsxs]
+
+    driverstore = get_driverstore_size()
+    if driverstore:
+        groups["windows_driverstore"] = [driverstore]
 
     dev_paths = [
         os.path.join(profile, ".cache"), os.path.join(profile, ".npm"),
