@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Xcode user data
+xcuserdata/
+**/xcuserdata/
+
+# Build products
+build/
+*.app
+*.appex
+*.xctest
+DerivedData/
+
+# CocoaPods / SPM
+Pods/
+.resolve
