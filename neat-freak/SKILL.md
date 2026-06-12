@@ -38,7 +38,8 @@ description: >
 
 这三层**受众不同，职责不重叠**。CLAUDE.md 里写"新增了 device flow 五个路由" ≠ docs/integration-guide.md 里"下游怎么接这套 flow" —— 前者是提醒自己，后者是教别人。**两份都要写。**
 
-> **Agent 记忆系统的具体位置因平台而异**（Claude Code 在 `~/.claude/projects/<...>/memory/`，Codex 用 `AGENTS.md`，OpenCode 用 `.opencode/`，OpenClaw 用 `~/.openclaw/`）。完整路径速查见 [references/agent-paths.md](references/agent-paths.md)。如果当前 agent 没有独立的记忆系统，直接跳过这一层，把功夫全花在 docs 和项目根 markdown 上。
+<!-- CodexSync local overlay: OpenAI Codex docs define Memories as local generated state under $CODEX_HOME/memories/, with AGENTS.md/docs remaining the primary durable control surfaces. Keep this wording aligned with official docs until upstream adopts it. -->
+> **Agent 记忆系统的具体位置和写入方式因平台而异**（Claude Code 在 `~/.claude/projects/<...>/memory/`，Codex Memories 是 `$CODEX_HOME/memories/` 下的生成态本地记忆，OpenCode 用 `.opencode/`，OpenClaw 用 `~/.openclaw/`）。完整路径速查见 [references/agent-paths.md](references/agent-paths.md)。如果当前 agent 的记忆是自动生成态，只审查是否有过期/冲突信号，不把手工编辑记忆当成主流程；必须稳定生效的规则仍写入项目 `AGENTS.md` / `CLAUDE.md` 或 docs。
 
 ### CLAUDE.md / AGENTS.md 是规则手册，不是变更日志（重要）
 
@@ -67,8 +68,9 @@ description: >
 | 文件 | Soft limit | 超过怎么办 |
 |---|---|---|
 | `CLAUDE.md` / `AGENTS.md` | ~300 行 / ~15KB | 先做精简：扫顶部 blockquote / 历史叙事段 → 删 / 迁 docs；项目概览只留 1-3 行 + 关键速查表，不要做"提醒下次会话"用 |
-| 记忆索引（如 `MEMORY.md`） | ~150 行 | 找已被新版本取代的、单次事故复盘、详细机制可读代码代替的 → 删 |
-| 单条 memory 文件 | ~100 行 | 通常说明在塞多件事 / 写成事故复盘 → 拆成几条独立记忆，或者直接删（很多事故复盘没复用价值） |
+| 人工维护的记忆索引（如 Claude `MEMORY.md`） | ~150 行 | 找已被新版本取代的、单次事故复盘、详细机制可读代码代替的 → 删 |
+| 人工维护的单条 memory 文件 | ~100 行 | 通常说明在塞多件事 / 写成事故复盘 → 拆成几条独立记忆，或者直接删（很多事故复盘没复用价值） |
+| Codex 生成态 memories | 不做行数门禁 | 可检查是否有明显过期/冲突，但不要把手工编辑 `$CODEX_HOME/memories/` 当主控制面 |
 | `docs/<single>.md` | ~1500 行 | 切分成多文件，加目录索引 |
 
 **超尺寸是这个 skill 的最高优先级，大于"补本次会话漏掉的同步"。** 原因：超尺寸的 CLAUDE.md 实际上让下次 AI 看不到真正重要的规则（被叙事段挤到 200 行外，进不了 prompt 重点段），同步再补也徒劳。
@@ -81,7 +83,8 @@ description: >
 
 1. 列出 agent 的记忆文件（如有）：
    - Claude Code：`ls ~/.claude/projects/<...>/memory/` 并读 `MEMORY.md` 及所有被引用的 `.md`
-   - Codex / OpenCode / 其他：找该 agent 的等价位置（见 references/agent-paths.md）
+   - Codex：确认 Memories 是否开启；可只读抽查 `$CODEX_HOME/memories/` 里的生成态记忆，但不要为了收尾而默认手工改这些文件
+   - OpenCode / 其他：找该 agent 的等价位置（见 references/agent-paths.md）
 2. 对本次对话涉及的**每一个项目**：
    - `ls <project-root>/` → 确认根目录结构
    - `ls <project-root>/docs/ 2>/dev/null` → **枚举所有 docs**（缺失也要确认）
@@ -124,6 +127,7 @@ description: >
 - **面向读者**：docs/ 的读者是"第一次接触这个项目的外部人"，写的时候想象对方只有 5 分钟能看完
 - **受众不混**：CLAUDE.md 里不抄 docs/ 的全文，docs/ 里不写"我记得上次……"——这是记忆的事
 - **指针不重复**：同一条事实如果 docs/ 里已详写，CLAUDE.md 只在「深入文档」指针表里出现一次，不在概览段再叙事一次
+- **Codex Memories 不当手工补丁池**：Codex 官方 Memories 是后台生成态，必要项目规则写 `AGENTS.md` / docs；不要在摘要里把"没有手动写长期 memory"当作未完成事项。
 
 **全局配置极度克制**：`~/.claude/CLAUDE.md` / `~/.codex/AGENTS.md` 只有用户在对话中明确表达了**跨项目的核心原则**才动。日常项目细节绝不进全局。
 
@@ -167,7 +171,7 @@ API 速查表、环境变量表、术语表是高频查询的结构化信息，*
 ```
 ## 同步完成
 
-### 记忆变更
+### 记忆变更（仅列实际手工修改的可写记忆；Codex 自动 memories 不需要写"未手工更新"）
 - 更新：xxx（原因）
 - 新增：xxx
 - 删除：xxx（原因）
