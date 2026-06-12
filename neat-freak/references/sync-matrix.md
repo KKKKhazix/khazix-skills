@@ -33,9 +33,11 @@ CLAUDE.md / AGENTS.md 不是变更日志。下面这些反模式发现了就删 
 
 ## 记忆层变更
 
+<!-- CodexSync local overlay: official Codex docs say generated memories should not be hand-edited as the primary control surface; durable rules belong in AGENTS.md/docs. -->
 | 情况 | 处理方式 |
 |---|---|
-| 过期事实 | 改记忆文件,同时更新索引(如 MEMORY.md)的 description |
+| 人工维护记忆里的过期事实 | 改记忆文件,同时更新索引(如 MEMORY.md)的 description |
+| Codex 生成态 memories 里出现过期事实 | 不直接手工改 generated state；把必须稳定生效的最终规则写入 `AGENTS.md` / docs，必要时提示用户让后台记忆自然刷新 |
 | 相对时间("今天"、"最近") | 全部转成绝对日期(`2026-04-29` 而非"今天") |
 | 重复记录(多条说同一件事) | 合并为一条,改索引 |
 | 已完成的待办 | 删除——知识库不是历史档案 |

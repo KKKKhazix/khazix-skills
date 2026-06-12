@@ -16,16 +16,18 @@
 
 ## OpenAI Codex
 
+<!-- CodexSync local overlay: OpenAI docs explicitly document Codex Memories under $CODEX_HOME/memories/ as generated state, so this section intentionally diverges from older upstream wording. -->
 | 用途 | 路径 |
 |---|---|
 | 跨会话指令(全局) | `~/.codex/AGENTS.md` 或 `$CODEX_HOME/AGENTS.md` |
+| 跨会话记忆(生成态) | `$CODEX_HOME/memories/`，默认通常是 `~/.codex/memories/` |
 | 项目级指令 | 项目根 `AGENTS.md`(可层级嵌套) |
 | 项目级 override | `AGENTS.override.md`(若存在,覆盖同目录 AGENTS.md) |
 | Skills 目录 | `~/.codex/skills/<name>/SKILL.md` 或项目内 `.codex/skills/<name>/` |
 
-Codex 没有独立的"记忆文件 + 索引"机制,所有跨会话信息都直接写在 `AGENTS.md` 里。同步时把"项目事实"那部分内容统一放 AGENTS.md。
+Codex Memories 是官方支持的本地生成态记忆。它会在后台从符合条件的历史线程沉淀上下文，可能不会在线程结束时立刻更新。同步时不要把手工编辑 `$CODEX_HOME/memories/` 当主控制面；必须稳定生效的项目规则和团队约定放 `AGENTS.md` 或 docs，偏好、习惯、反复踩坑等让 Codex Memories 辅助召回。
 
-发现项目里有 `TEAM_GUIDE.md` 或 `.agents.md` 也要看——这是 Codex 的 fallback 文件名。
+发现项目里有 `TEAM_GUIDE.md` 或 `.agents.md` 也要看——这类文件可能被本地 fallback 配置读取。
 
 ## OpenClaw
 
@@ -50,14 +52,14 @@ OpenClaw 没有独立的"记忆文件 + 索引"机制，跨会话信息可放在
 
 OpenCode 同时读取 Claude Code 和 Codex 的目录,所以同一个 skill 装在 `~/.claude/skills/` 下的话三家都能识别。OpenClaw 走自己的 `~/.openclaw/skills/`，需要单独装一份（或用符号链接）。
 
-## 如果当前 agent 没有独立记忆系统
+## 如果当前 agent 没有可手工维护的独立记忆系统
 
-跳过"记忆"那一层,把功夫全花在:
+跳过"手工整理记忆"那一层,把功夫全花在:
 - 项目根 markdown(CLAUDE.md / AGENTS.md / 本平台等价文件)
 - README.md
 - docs/
 
-仍然是有效的同步——记忆是锦上添花,docs 才是项目知识的最低保障。
+仍然是有效的同步——自动记忆是锦上添花,docs 才是项目知识的最低保障。
 
 ## 跨平台共存策略
 
