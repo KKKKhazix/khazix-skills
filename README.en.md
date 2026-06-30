@@ -7,7 +7,7 @@
 #### A few AI skills I actually use every day, open-sourced as-is
 
 [![License](https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge)](./LICENSE)
-[![Skills](https://img.shields.io/badge/Skills-6-10B981?style=for-the-badge)](#-skills)
+[![Skills](https://img.shields.io/badge/Skills-7-10B981?style=for-the-badge)](#-skills)
 [![AgentSkills](https://img.shields.io/badge/AgentSkills-Standard-8B5CF6?style=for-the-badge)](https://agentskills.io)
 
 ![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-D97706?style=flat-square&logo=anthropic&logoColor=white)
@@ -31,6 +31,7 @@ Every skill here is a structured instruction set that agents load directly. Foll
 | 🔥 [**aihot**](#-aihot-ai-hot-news-query) | Lets your agent pull AI HOT's daily report and all AI news from aihot.virxact.com with one Chinese sentence — no API key | [aihot.virxact.com](https://aihot.virxact.com) |
 | 🧹 [**neat-freak**](#-neat-freak) | After a session, run `/neat` to reconcile your project docs, CLAUDE.md, and agent memory with the code | [Article (Chinese)](https://mp.weixin.qq.com/s/tg1wd-iN2gWHWhXdY0faeg) |
 | 🔭 [**hv-analysis**](#-hv-analysis-horizontal-vertical-analysis) | Drop a product/company/concept into it and get a 10k–30k word PDF research report | [Article (Chinese)](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA) |
+| 🧠 [**research-analysis**](#-research-analysis) | Turns news, WeChat articles, papers, open-source projects, or controversial claims into a sourced Markdown research report | [SKILL.md](./research-analysis/SKILL.md) |
 | ✍️ [**khazix-writer**](#-khazix-writer) | Makes the agent write long-form Chinese articles in my personal voice | [Article (Chinese)](https://mp.weixin.qq.com/s/AtxGrii_K-nzkwUM9SNhEg) |
 
 ---
@@ -203,6 +204,46 @@ The output is a **typeset PDF research report**, 10,000–30,000 words.
 [![Tessl](https://img.shields.io/badge/Tessl-published-3B82F6?style=flat-square)](https://tessl.io/registry/khazix-skills/hv-analysis)
 
 → [SKILL.md](./hv-analysis/SKILL.md) · [Article (Chinese)](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA)
+
+</td></tr>
+</table>
+
+<table>
+<tr><td>
+
+### 🧠 research-analysis
+
+> *"Don't just summarize the article. Trace the facts, sources, contradictions, and blind spots behind it."*
+
+This is the everyday "research this" skill. Give it a news item, a WeChat article, a paper, an open-source project, a company name, or a controversial claim. It first turns the input into claims to verify, then traces primary sources and produces a Markdown research report.
+
+How it differs from `hv-analysis`: `hv-analysis` is for big horizontal/vertical PDF reports on products, companies, concepts, or people. `research-analysis` is the daily research desk for content work: faster, source-first, Markdown-native, and designed for articles, events, methods, repositories, and claims.
+
+**What it does**
+
+- Reads WeChat links through 得到大脑 / Get 笔记 when available, instead of stopping at WeChat verification pages
+- Fact-checks viral claims: what is true, what needs cooling down, what can be strengthened
+- Traces papers, official projects, GitHub repos, company announcements, regulatory files, and primary sources
+- Uses STORM-style prewriting: perspective discovery, perspective-specific questions, contradiction maps
+- Applies horizontal/vertical analysis: timeline, comparable cases, stakeholders, future scenarios
+- Outputs a Markdown report with key conclusions, fact-checking, contrarian insight, writing material, and sources
+
+**How to trigger**
+
+```
+研究一下这个新闻：……
+深度研究一下这篇文章：……
+调研一下这个开源项目：……
+看看这个微信文章背后的研究源头：……
+```
+
+**Not for**
+
+- Simple definition lookups
+- One-line factual answers
+- Writing final Chinese long-form articles; use `khazix-writer` for that
+
+→ [SKILL.md](./research-analysis/SKILL.md) · [Codex install guide](./research-analysis/INSTALL_FOR_CODEX.md)
 
 </td></tr>
 </table>

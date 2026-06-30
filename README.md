@@ -7,7 +7,7 @@
 #### 我自己每天在用的一些 AI Skill，都开源在这里
 
 [![License](https://img.shields.io/badge/License-MIT-3B82F6?style=for-the-badge)](./LICENSE)
-[![Skills](https://img.shields.io/badge/Skills-6-10B981?style=for-the-badge)](#-skills)
+[![Skills](https://img.shields.io/badge/Skills-7-10B981?style=for-the-badge)](#-skills)
 [![AgentSkills](https://img.shields.io/badge/AgentSkills-Standard-8B5CF6?style=for-the-badge)](https://agentskills.io)
 
 ![Claude Code](https://img.shields.io/badge/Claude_Code-Skill-D97706?style=flat-square&logo=anthropic&logoColor=white)
@@ -31,6 +31,7 @@
 | 🔥 [**aihot（AI HOT 资讯查询）**](#-aihotai-hot-资讯查询) | 让 Agent 用一句话拿到 aihot.virxact.com 每天的 AI HOT 日报和全部 AI 动态，无需 API Key | [aihot.virxact.com](https://aihot.virxact.com) |
 | 🧹 [**neat-freak（洁癖）**](#-neat-freak洁癖) | 干完活跑一下 `/neat`，自动把你这次改的东西跟项目文档、CLAUDE.md、Agent 记忆全部对齐 | [公众号文章](https://mp.weixin.qq.com/s/tg1wd-iN2gWHWhXdY0faeg) |
 | 🔭 [**hv-analysis（横纵分析法）**](#-hv-analysis横纵分析法) | 想搞懂一个产品/公司/概念是怎么回事，丢给它，给你一份万字 PDF 研究报告 | [公众号文章](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA) |
+| 🧠 [**research-analysis（研究一下）**](#-research-analysis研究一下) | 把新闻、微信文章、论文、开源项目或争议事件研究成一份有事实核验和独特洞察的 Markdown 报告 | [SKILL.md](./research-analysis/SKILL.md) |
 | ✍️ [**khazix-writer（卡兹克写作）**](#-khazix-writer卡兹克写作) | 装上之后，Agent 用我的口吻和节奏写公众号长文 | [公众号文章](https://mp.weixin.qq.com/s/AtxGrii_K-nzkwUM9SNhEg) |
 
 ---
@@ -203,6 +204,46 @@ sync up          # English
 [![Tessl](https://img.shields.io/badge/Tessl-published-3B82F6?style=flat-square)](https://tessl.io/registry/khazix-skills/hv-analysis)
 
 → [SKILL.md](./hv-analysis/SKILL.md) · [公众号讲解](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA)
+
+</td></tr>
+</table>
+
+<table>
+<tr><td>
+
+### 🧠 research-analysis（研究一下）
+
+> *"别只总结文章，先把它背后的事实、源头、矛盾和盲区找出来。"*
+
+这是我现在日常用的“研究一下”技能。你丢一个新闻、微信公众号链接、论文、开源项目、公司名、争议事件，它会先把用户给的说法拆成待核验命题，再追原始来源，最后生成一份 Markdown 深度研究报告。
+
+它跟 `hv-analysis` 的区别是：`hv-analysis` 更像产品/公司/概念的横纵 PDF 大报告；`research-analysis` 更像日常内容生产里的研究工作台，适合快速把一个新闻、方法论文章、微信链接或开源项目研究到能写文章、做选题、下判断。
+
+**它会做什么**
+
+- 微信链接默认先走得到大脑 / Get 笔记读取正文，不被微信验证页卡住
+- 对新闻爆点做事实核验：哪些是真的，哪些要降温，哪些可以强化
+- 追原论文、官方项目、GitHub、公司公告、监管文件和一手来源
+- 用 STORM 式多视角预写作：发现视角、逐视角提问、画矛盾图
+- 做横纵分析：时间线、同类对照、利益相关方、未来剧本
+- 输出 Markdown 报告：核心结论、事实核验、反常识洞察、写作素材点、来源清单
+
+**怎么触发**
+
+```
+研究一下这个新闻：……
+深度研究一下这篇文章：……
+调研一下这个开源项目：……
+看看这个微信文章背后的研究源头：……
+```
+
+**不适合**
+
+- 单纯查一个名词解释
+- 只要一句话结论的小事实查询
+- 直接写公众号成稿，那应该交给 `khazix-writer`
+
+→ [SKILL.md](./research-analysis/SKILL.md) · [Codex 安装说明](./research-analysis/INSTALL_FOR_CODEX.md)
 
 </td></tr>
 </table>
