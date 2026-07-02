@@ -38,11 +38,11 @@ description: >
 
 这三层**受众不同，职责不重叠**。CLAUDE.md 里写"新增了 device flow 五个路由" ≠ docs/integration-guide.md 里"下游怎么接这套 flow" —— 前者是提醒自己，后者是教别人。**两份都要写。**
 
-> **Agent 记忆系统的具体位置因平台而异**（Claude Code 在 `~/.claude/projects/<...>/memory/`，Codex 用 `AGENTS.md`，OpenCode 用 `.opencode/`，OpenClaw 用 `~/.openclaw/`）。完整路径速查见 [references/agent-paths.md](references/agent-paths.md)。如果当前 agent 没有独立的记忆系统，直接跳过这一层，把功夫全花在 docs 和项目根 markdown 上。
+> **Agent 记忆系统的具体位置和加载方式因平台而异**（Claude Code 在 `~/.claude/projects/<...>/memory/`，Codex 使用 `$CODEX_HOME/memories/` 下的 `memory_summary.md` / `MEMORY.md` 分层，OpenCode 用 `.opencode/`，OpenClaw 用 `~/.openclaw/`）。完整路径速查见 [references/agent-paths.md](references/agent-paths.md)。如果当前 agent 没有独立的记忆系统，直接跳过这一层，把功夫全花在 docs 和项目根 markdown 上。
 
 ### 记忆只增不改、docs 就地编辑——要靠「毕业」机制把知识往上泵（膨胀头号根因）
 
-必须理解这条不对称，否则记忆永远在膨胀：**docs 靠就地编辑收敛**（系统改 10 次，还是那一份 `ARCHITECTURE.md`），**而 agent 记忆天生只追加**（每条教训生一个新文件，旧的不删）。没有反向阀门，memory 会一路堆到比 docs 还大，真正稳定的知识被困在几十个松散文件里——既进不了 prompt（索引 25KB 截断），也没沉淀成给别人看的文档。高速开发的项目尤其明显：每天 2-3 条教训 × 数周 = 上百个记忆文件。
+必须理解这条不对称，否则记忆永远在膨胀：**docs 靠就地编辑收敛**（系统改 10 次，还是那一份 `ARCHITECTURE.md`），**而 agent 记忆通常由后台流程追加 / 合并**（每条教训生一个新记录，旧的不一定删）。没有反向阀门，memory 会一路堆到比 docs 还大，真正稳定的知识被困在松散记忆里——要么挤占 prompt 摘要层，要么让检索层变成流水账，也没沉淀成给别人看的文档。高速开发的项目尤其明显：每天 2-3 条教训 × 数周 = 上百个记忆文件。
 
 **反向阀门 = 毕业（promote）。** 一条记忆满足下面任一条，就把它「毕业」：内容并进对应的 `docs/` 或 `CLAUDE.md`，然后**把原记忆文件删掉或缩成一行指针**：
 
@@ -81,13 +81,15 @@ description: >
 | 文件 | 上限 | 超过怎么办 |
 |---|---|---|
 | `CLAUDE.md` / `AGENTS.md` | ~300 行 / ~15KB（软，看 adherence） | 先精简：扫顶部 blockquote / 历史叙事段 → 删 / 迁 docs；项目概览只留 1-3 行 + 速查表，不做"提醒下次会话"用。（CLAUDE.md 是全量加载，不会被截断，但越长 adherence 越差） |
-| 记忆索引 `MEMORY.md` | **≤200 行 且 ≤25KB（硬）** | Claude Code 只加载 `MEMORY.md` 的前 200 行或前 25KB（先到先算），**超出部分在会话开始时静默不加载——等于没记**。务必压在 ~150 行 / ~18KB 留缓冲。压法不是硬删，是下面的「毕业」机制：详细机制提升进 docs、索引只留一行指针 |
+| Claude Code 记忆索引 `MEMORY.md` | **≤200 行 且 ≤25KB（硬）** | Claude Code 只加载 `MEMORY.md` 的前 200 行或前 25KB（先到先算），**超出部分在会话开始时静默不加载——等于没记**。务必压在 ~150 行 / ~18KB 留缓冲。压法不是硬删，是下面的「毕业」机制：详细机制提升进 docs、索引只留一行指针 |
+| Codex prompt 摘要 `memory_summary.md` | 源码按 `MEMORY_TOOL_DEVELOPER_INSTRUCTIONS_SUMMARY_TOKEN_LIMIT` 截断（当前约 2500 tokens） | 这是 Codex 会注入 prompt 的层。保持短、去重、可路由，优先控制在约 1500-2200 tokens；不要放详细 runbook、事故过程或大段 provenance |
+| Codex 检索手册 `MEMORY.md` | 不设固定 KB / 行数硬线 | 这是 searchable registry，不会整份 prompt-loaded。优化目标是 easy to grep、按 cwd / workflow 分块、少重复、少 task diary；过大时先合并重复 task group 和毕业稳定知识，而不是机械压到 25KB |
 | 单条 memory 文件 | ~100 行（软） | 通常在塞多件事 / 写成事故复盘 → 拆 / 删；**若是稳定机制说明，提升进 docs 再把记忆缩成 reference 指针** |
 | `docs/<single>.md` | ~1500 行（软） | 切分成多文件，加目录索引 |
 
 **额外做一次「体量倒挂」体检**：`du -sh <memory 目录>` 对比 `du -sh docs/`。**健康态是 docs 厚、memory 薄**——docs 是沉淀的权威层，memory 是流动的「最近教训 + 指针」层。若 memory 反而比 docs 大，几乎一定是「本该毕业进 docs 的稳定知识还赖在松散记忆文件里」，按「毕业」机制往上泵，别只在 memory 内部挪。
 
-**超尺寸是这个 skill 的最高优先级，大于"补本次会话漏掉的同步"。** 原因：`MEMORY.md` 超 25KB 的部分根本不进上下文（静默丢失），超尺寸的 CLAUDE.md 让真正的规则被叙事段挤出 adherence——两种情况下，同步再补都徒劳。
+**超尺寸是这个 skill 的最高优先级，大于"补本次会话漏掉的同步"。** 原因：Claude Code 的 `MEMORY.md` 超 25KB / 200 行会静默丢掉后半段；Codex 的 `memory_summary.md` 超过 token budget 会被截断；超尺寸的 CLAUDE.md / AGENTS.md 会让真正的规则被叙事段挤出 adherence。同步再补之前，先确认当前平台是哪一层在进 prompt。
 
 **执行顺序**：先精简（破除膨胀）→ 再做本次会话增量同步（补漏）。两件事不能合并——精简时心态是"什么不该在这"，补漏时心态是"什么该补到这"，混着做会两头不到位。
 
@@ -97,7 +99,8 @@ description: >
 
 1. 列出 agent 的记忆文件（如有）：
    - Claude Code：`ls ~/.claude/projects/<...>/memory/` 并读 `MEMORY.md` 及所有被引用的 `.md`
-   - Codex / OpenCode / 其他：找该 agent 的等价位置（见 references/agent-paths.md）
+   - Codex：先 `wc -l -c ~/.codex/memories/memory_summary.md ~/.codex/memories/MEMORY.md`；`memory_summary.md` 是 prompt 摘要层，`MEMORY.md` 是按需检索层
+   - OpenCode / OpenClaw / 其他：找该 agent 的等价位置（见 references/agent-paths.md）
 2. 对本次对话涉及的**每一个项目**：
    - `ls <project-root>/` → 确认根目录结构
    - `ls <project-root>/docs/ 2>/dev/null` → **枚举所有 docs**（缺失也要确认）
@@ -161,7 +164,8 @@ API 速查表、环境变量表、术语表是高频查询的结构化信息，*
 - [ ] 没新增 "X 起 Y 上线，详见 docs/Z.md" 这种 blockquote 历史叙事条目
 - [ ] 没在 CLAUDE.md 里抄 docs/ 已有的详细机制说明
 - [ ] 单条 memory 文件没超 ~100 行（超了拆 / 删 / 改成 reference）
-- [ ] **记忆索引 `MEMORY.md` ≤ 25KB 且 ≤ 200 行**（`wc -c` 实测；超出部分会话开始时静默不加载 = 等于没记）
+- [ ] Claude Code：**记忆索引 `MEMORY.md` ≤ 25KB 且 ≤ 200 行**（`wc -c` 实测；超出部分会话开始时静默不加载 = 等于没记）
+- [ ] Codex：`memory_summary.md` 没有超过 prompt 摘要预算，内容短、去重、能路由到 `MEMORY.md`；`MEMORY.md` 不按 25KB 卡死，但要检查重复 task group、过期流水账和低信号 routing
 - [ ] **体量没倒挂**：`du memory` 不应大于 `du docs/`；倒挂了说明有该毕业进 docs 的知识赖在 memory，回去毕业
 
 **完整性 / 反漏改（再查这组）**：
