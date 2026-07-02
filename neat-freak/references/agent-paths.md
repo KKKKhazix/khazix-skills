@@ -19,11 +19,17 @@
 | 用途 | 路径 |
 |---|---|
 | 跨会话指令(全局) | `~/.codex/AGENTS.md` 或 `$CODEX_HOME/AGENTS.md` |
+| 跨会话记忆目录 | `~/.codex/memories/` 或 `$CODEX_HOME/memories/` |
+| prompt 摘要层 | `~/.codex/memories/memory_summary.md` |
+| 检索手册 | `~/.codex/memories/MEMORY.md` |
+| 原始记忆与证据 | `~/.codex/memories/raw_memories.md`、`~/.codex/memories/rollout_summaries/` |
 | 项目级指令 | 项目根 `AGENTS.md`(可层级嵌套) |
 | 项目级 override | `AGENTS.override.md`(若存在,覆盖同目录 AGENTS.md) |
-| Skills 目录 | `~/.codex/skills/<name>/SKILL.md` 或项目内 `.codex/skills/<name>/` |
+| Skills 目录 | 运行时优先看当前 Codex 注入的 skills 列表；本机通用入口通常是 `~/.agents/skills/<name>/SKILL.md` |
 
-Codex 没有独立的"记忆文件 + 索引"机制,所有跨会话信息都直接写在 `AGENTS.md` 里。同步时把"项目事实"那部分内容统一放 AGENTS.md。
+Codex 有独立 memories 层，但它不是把 `MEMORY.md` 整份塞进 prompt。当前实现里，`memory_summary.md` 是 prompt-loaded 摘要层，会按 token budget 截断；`MEMORY.md` 是 searchable registry / 检索手册，未来 agent 根据 `memory_summary.md` 里的关键词再按需搜索和读取。
+
+整理 Codex memories 时，先控 `memory_summary.md` 的密度和路由质量；`MEMORY.md` 不套 Claude Code 的 25KB / 200 行硬线，而是检查是否 easy to grep、是否有重复 task group、是否把单次事件流水账长期保留。稳定团队规则仍应进入 `AGENTS.md` 或项目 docs，不要只留在本地 memories。
 
 发现项目里有 `TEAM_GUIDE.md` 或 `.agents.md` 也要看——这是 Codex 的 fallback 文件名。
 
