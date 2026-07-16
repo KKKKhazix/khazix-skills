@@ -34,6 +34,30 @@
 
 发现项目里有 `TEAM_GUIDE.md` 或 `.agents.md` 也要看——这是 Codex 的 fallback 文件名。
 
+## GitHub Copilot
+
+| 用途 | 路径 |
+|---|---|
+| 项目级主指令 | 项目根 `AGENTS.md`（开放标准,可层级嵌套）**或** `.github/copilot-instructions.md`（二选一,不要双主文件） |
+| 文件级指令 | `.github/instructions/*.instructions.md` |
+| 自定义 agents | `.github/agents/*.agent.md` |
+| Prompts | `.github/prompts/*.prompt.md` |
+| 项目级 skills | `.github/skills/<name>/SKILL.md`、`.agents/skills/<name>/SKILL.md`、`.claude/skills/<name>/SKILL.md` |
+| 用户级 skills | `~/.copilot/skills/<name>/SKILL.md`、`~/.agents/skills/<name>/SKILL.md`、`~/.claude/skills/<name>/SKILL.md` |
+| Hooks（条件检查） | `.github/hooks/*.json` |
+
+Copilot 没有独立的"记忆索引 + 记忆文件"机制。对 neat-freak 来说,优先盘点 `AGENTS.md` 或 `.github/copilot-instructions.md`,再看 Copilot 相关配置目录即可。
+
+执行 neat-freak 第一步时,如果当前平台是 GitHub Copilot,至少按下面顺序盘点:
+
+1. 先确认项目级主指令到底是哪一个: `AGENTS.md` 还是 `.github/copilot-instructions.md`。如果两者都存在且都写实质内容,标记为待整理。
+2. 再枚举 `.github/instructions/` 看有没有按文件或任务范围生效的规则。
+3. 再枚举 `.github/agents/`、`.github/skills/`、`.agents/skills/`,判断有没有项目级工作流知识需要同步。
+4. `.github/prompts/` 作为中优先级检查:只要仓库把 prompt 当成团队交付物,就要一起盘点。
+5. `.github/hooks/` 只在仓库明确依赖 hook 做策略校验、自动注入上下文或阻止危险操作时检查;不要把所有 hook 都默认抬到最高优先级。
+
+如果你在 Copilot 仓库里看到 `.claude/skills/`,不要直接跳过。Copilot 会扫描这类目录,所以这些 skill 也属于有效知识面。
+
 ## OpenClaw
 
 | 用途 | 路径 |
