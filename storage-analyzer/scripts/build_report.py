@@ -48,7 +48,9 @@ def main():
     with open(out, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"报告已生成: {out}")
-    print(f"打开: open '{out}'")
+    opener = ("start" if sys.platform.startswith("win")
+              else "open" if sys.platform == "darwin" else "xdg-open")
+    print(f"打开: {opener} '{out}'")
 
 
 if __name__ == "__main__":
