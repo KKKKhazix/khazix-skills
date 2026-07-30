@@ -15,7 +15,7 @@ description: >-
   project-knowledge context.
 compatibility: Requires filesystem read access. Writes and destructive actions follow the active agent, workspace, and user authorization rules. Git and rg improve verification; scripts/audit-inventory.sh needs Bash — without it, do the equivalent checks manually. Works on any Agent Skills platform.
 metadata:
-  version: "3.0.0"
+  version: "3.1.0"
   category: knowledge-governance
 ---
 
@@ -102,6 +102,19 @@ metadata:
 - 使用 [references/agent-paths.md](references/agent-paths.md) 的平台专属预算；未列出的平台按其中的三分法探测归类，不能把 Claude 自动记忆和 Codex 项目指令/生成记忆当成同一种文件。
 
 「全量盘点」不等于把大型仓库每篇文档都塞进上下文：机械枚举全部文件，先读 README、规则、文档索引和与本次变更命中的文档；只有仓库很小、索引缺失、发现矛盾或用户明确要求 exhaustive audit 时才逐篇全文读取。
+
+### 0.5 锚点检测：增量同步模式
+
+Git 可用时，查找上次 neat-freak 锚点实现增量盘点：
+
+```bash
+LAST_ANCHOR=$(git log --grep="\[neat-freak\]" --format="%H" -1 HEAD 2>/dev/null)
+```
+
+- **找到锚点** → 增量模式：`git diff --name-only $LAST_ANCHOR..HEAD` 获取自上次同步以来的变更文件。步骤 1–3 的盘点范围缩小到这些文件及其直接影响的文档；步骤 4–7（修改、验证、汇报）标准不变。
+- **未找到** → 全量模式：按步骤 0 的完整盘点执行，行为不变。
+
+**创建新锚点**：本次 neat-freak 的文档变更用 `[neat-freak]` 前缀单独 commit。如果工作区有未提交的代码变更，先提交或 stash，确保文档变更是独立 commit（锚点定位更精确）。
 
 ### 1. 建立现役事实矩阵
 
