@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/kkkkhazix-khazix-skills-badge.png)](https://mseep.ai/app/kkkkhazix-khazix-skills)
+
 <div align="center">
 
 **中文** · [English](./README.en.md)
