@@ -1,0 +1,7 @@
+# Private local config for hv-analysis.
+# Copy this file to ~/.config/hv-analysis/config.yaml and fill in your own local values.
+vault: "<your-obsidian-vault>"
+# Optional but recommended for direct-write fallback:
+# vault_root: "/absolute/path/to/your/obsidian/vault"
+default_path: "<your-default-note-folder>"
+default_output_mode: "pdf"
