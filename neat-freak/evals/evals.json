@@ -161,6 +161,21 @@
         "不把 Claude 或 Codex 的尺寸阈值和写入规则套到未知平台",
         "报告区分已同步的文档面和只读的记忆面"
       ]
+    },
+    {
+      "id": 12,
+      "name": "cross-agent-handoff-receipt",
+      "prompt": "Claude 已经把 frontend-benchmark 的四模型页面做完了，具体进度只写在 .claude/session-progress.md。workspace 上层已经有 CLAUDE.md，接下来改由 Codex 接手发布；帮我做一次洁癖收尾，让它不用翻 Claude 私有会话也能继续。",
+      "expected_output": "核对代码后的当前状态、下一步和验证入口进入项目内可共同发现的权威面；不把上级规则或平台私有会话残留误当成跨 Agent 交接凭证。",
+      "files": ["evals/fixtures/eval-12-cross-agent-handoff"],
+      "expectations": [
+        "识别上级 CLAUDE.md 只是规则来源，不足以证明项目进度已对下一位接手者公开",
+        "以代码和可验证产物核对四个模型页面均已完成，不直接把 session-progress.md 当作现役事实",
+        "在已有 README 或项目现有文档中就地补齐当前状态、下一步和验证入口，使 Claude、Codex 和人员都能发现",
+        "不因交接场景强造固定命名的 HANDOFF.md、PROJECT_STATUS.md 或两套平行文档",
+        "只迁移后续接手需要的耐久事实，不复制会话流水或平台私有细节",
+        "最终报告说明共享入口、事实来源和仍待执行的发布步骤"
+      ]
     }
   ]
 }

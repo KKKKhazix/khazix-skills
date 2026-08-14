@@ -61,6 +61,7 @@ def main() -> None:
         "用户在最初任务里说「做完后清理」不替代这次最终汇报后的确认",
         "out-of-scope",
         "只有用户请求、项目收尾合同或平台规则明确授权时才写记忆",
+        "上级已有规则不等于项目已有交接凭证",
     ]
     for phrase in required_phrases:
         assert phrase in text, f"missing core contract: {phrase}"
@@ -101,6 +102,7 @@ def main() -> None:
         "self-audit-skill",
         "vibe-project-first-cleanup",
         "unknown-platform-fallback",
+        "cross-agent-handoff-receipt",
     }
     assert required_evals.issubset({item["name"] for item in evals})
     for item in evals:
