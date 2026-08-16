@@ -321,6 +321,17 @@ if [[ "$SHARED_TARGET" -eq 1 ]]; then
     fi
   done
 
+  # 迁移会移除 ~/.claude/skills/aihot。README 承诺迁移后 Claude Code 的入口是
+  # 指向共享安装的软链，因此当本次迁移包含该旧路径时补回兼容软链目标；
+  # --target claude 已自行设置，未涉及该路径时不新建 Claude 入口。
+  if [[ -z "$CLAUDE_COMPAT_LINK" && "$MIGRATE_LEGACY" -eq 1 ]]; then
+    for ((i = 0; i < LEGACY_COUNT; i++)); do
+      [[ "${LEGACY_PATHS[$i]}" == "$HOME/.claude/skills/aihot" ]] || continue
+      CLAUDE_COMPAT_LINK="$HOME/.claude/skills/aihot"
+      break
+    done
+  fi
+
   if [[ "$LEGACY_COUNT" -gt 0 && "$MIGRATE_LEGACY" -eq 0 ]]; then
     echo "[ERR] legacy AIHOT Skill copies found; refusing to create a duplicate:" >&2
     for ((i = 0; i < LEGACY_COUNT; i++)); do
