@@ -54,7 +54,7 @@ body {
 .cover {
     page-break-after: always;
     text-align: center;
-    padding-top: 45%;
+    padding-top: 30vh;
 }
 .cover h1 {
     font-size: 28pt;
