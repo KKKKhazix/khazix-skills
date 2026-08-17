@@ -6,7 +6,7 @@ interactive report, and exposes POST /action to move green-tier paths to Trash
 or delete them outright. Stop with Ctrl+C.
 
 Usage:
-    server.py <analysis.json>
+    server.py <analysis.json> [--idle-timeout SECONDS]
 
 SAFETY MODEL — read before changing:
 - Allowlist: only paths listed in this report's green items `trash_paths` are
@@ -18,6 +18,7 @@ SAFETY MODEL — read before changing:
 - Two modes: "trash" (Finder -> Trash, reversible) and "rm" (immediate,
   irreversible). The browser confirms each action before sending.
 """
+import argparse
 import json
 import os
 import secrets
@@ -38,6 +39,7 @@ TPL = ""
 RM_ALLOW = set()
 TRASH_ALLOW = set()
 OPEN_ALLOW = set()
+DEFAULT_IDLE_TIMEOUT = 30 * 60
 
 
 def expand(p):
@@ -169,6 +171,7 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(b)
 
     def do_GET(self):
+        self.server.last_activity = time.monotonic()
         if self.path in ("/", "/index.html"):
             blob = json.dumps(DATA, ensure_ascii=False)
             cfg = json.dumps({"token": TOKEN, "endpoint": "/action"})
@@ -178,6 +181,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, "not found", "text/plain")
 
     def do_POST(self):
+        self.server.last_activity = time.monotonic()
         if self.path != "/action":
             self._send(404, json.dumps({"ok": False, "error": "not found"}))
             return
@@ -227,23 +231,65 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, json.dumps({"ok": True, "done": done}))
 
 
-def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
-        sys.exit(1)
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("analysis", help="分析 JSON 路径")
+    parser.add_argument(
+        "--idle-timeout",
+        type=float,
+        default=DEFAULT_IDLE_TIMEOUT,
+        metavar="SECONDS",
+        help="无请求后自动停止服务的秒数，设为 0 可禁用（默认：1800）",
+    )
+    args = parser.parse_args(argv)
+    if args.idle_timeout < 0:
+        parser.error("--idle-timeout 不能为负数")
+    return args
+
+
+def serve_until_idle(srv, idle_timeout):
+    if idle_timeout == 0:
+        srv.serve_forever()
+        return
+
+    while True:
+        remaining = idle_timeout - (time.monotonic() - srv.last_activity)
+        if remaining <= 0:
+            print("服务已因空闲超时自动停止。", flush=True)
+            return
+        srv.timeout = min(1.0, remaining)
+        srv.handle_request()
+
+
+def main(argv=None):
+    args = parse_args(argv)
     global DATA, TPL, RM_ALLOW, TRASH_ALLOW, OPEN_ALLOW
-    DATA, TPL, RM_ALLOW, TRASH_ALLOW, OPEN_ALLOW = load(sys.argv[1])
+    DATA, TPL, RM_ALLOW, TRASH_ALLOW, OPEN_ALLOW = load(args.analysis)
     srv = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    srv.last_activity = time.monotonic()
     port = srv.server_address[1]
     url = "http://127.0.0.1:%d/" % port
-    print("报告服务已启动：" + url)
-    print("绿灯可删 %d 项 | 橙灯可移废纸篓/打开文件夹 %d 项 | 页面上点" % (len(RM_ALLOW), len(TRASH_ALLOW) - len(RM_ALLOW)))
-    print("用完按 Ctrl+C 停止服务（服务关掉后按钮即失效）")
+    print("报告服务已启动：" + url, flush=True)
+    print(
+        "绿灯可删 %d 项 | 橙灯可移废纸篓/打开文件夹 %d 项 | 页面上点"
+        % (len(RM_ALLOW), len(TRASH_ALLOW) - len(RM_ALLOW)),
+        flush=True,
+    )
+    if args.idle_timeout:
+        print(
+            "用完按 Ctrl+C 停止服务（连续 %g 秒无请求也会自动停止）"
+            % args.idle_timeout,
+            flush=True,
+        )
+    else:
+        print("用完按 Ctrl+C 停止服务", flush=True)
     webbrowser.open(url)
     try:
-        srv.serve_forever()
+        serve_until_idle(srv, args.idle_timeout)
     except KeyboardInterrupt:
-        print("\n已停止服务。")
+        print("\n已停止服务。", flush=True)
+    finally:
+        srv.server_close()
 
 
 if __name__ == "__main__":
