@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "khazix-skills",
+  "description": "Khazix 的一组 Agent Skills，打包成可在 Claude Desktop / Cowork / Claude Code 里添加的 marketplace。",
+  "owner": {
+    "name": "bubua12",
+    "url": "https://github.com/bubua12"
+  },
+  "plugins": [
+    {
+      "name": "khazix-skills",
+      "source": "./",
+      "description": "leader、storage-analyzer、aihot、neat-freak、hv-analysis、khazix-writer。装一次拿到全部六个 skill。",
+      "category": "productivity",
+      "homepage": "https://github.com/bubua12/khazix-skills",
+      "keywords": [
+        "khazix",
+        "writing",
+        "research",
+        "storage",
+        "aihot"
+      ]
+    }
+  ]
+}

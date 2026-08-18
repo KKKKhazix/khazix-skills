@@ -1,0 +1,27 @@
+{
+  "name": "khazix-skills",
+  "version": "1.0.0",
+  "description": "Khazix 的六个 Agent Skills：目标任务书、磁盘清理、AI 资讯、知识收尾、横纵分析、公众号长文。",
+  "author": {
+    "name": "数字生命卡兹克",
+    "url": "https://github.com/KKKKhazix"
+  },
+  "homepage": "https://github.com/bubua12/khazix-skills",
+  "repository": "https://github.com/bubua12/khazix-skills",
+  "license": "MIT",
+  "keywords": [
+    "khazix",
+    "writing",
+    "research",
+    "storage",
+    "aihot"
+  ],
+  "skills": [
+    "./leader",
+    "./storage-analyzer",
+    "./aihot",
+    "./neat-freak",
+    "./hv-analysis",
+    "./khazix-writer"
+  ]
+}
