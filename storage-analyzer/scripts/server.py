@@ -126,9 +126,33 @@ def _trash_windows(path):
         raise OSError("SHFileOperation failed (code %d)" % rc)
 
 
+def _force_rmtree(path):
+    # Go 模块缓存等目录被工具链刻意设为只读（dr-xr-xr-x）：unlink 文件需要的是
+    # 父目录写权限，逐条 onerror 补救不彻底（实测 Python 3.14 仍会 ENOTEMPTY）。
+    # 稳妥做法：先 os.walk 递归把整棵树补上属主写权限，再正常 rmtree。
+    def _chmod_quiet(p):
+        try:
+            os.chmod(p, 0o700)
+        except OSError:
+            pass  # 符号链接指向外部/失效目标时跳过，不影响后续删除
+
+    for root, dirs, files in os.walk(path):
+        for name in dirs:
+            _chmod_quiet(os.path.join(root, name))
+        for name in files:
+            _chmod_quiet(os.path.join(root, name))
+
+    def _chmod_retry(func, p, _exc):
+        _chmod_quiet(p)
+        _chmod_quiet(os.path.dirname(p))  # unlink/rmdir 失败多因父目录只读
+        func(p)
+
+    shutil.rmtree(path, onerror=_chmod_retry)
+
+
 def hard_delete(path):
     if os.path.isdir(path) and not os.path.islink(path):
-        shutil.rmtree(path)
+        _force_rmtree(path)
     else:
         os.remove(path)
 
