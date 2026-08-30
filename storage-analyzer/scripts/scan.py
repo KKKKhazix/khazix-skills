@@ -156,22 +156,34 @@ def scan_macos():
 # Windows  (UNTESTED on this build — stdlib only: os, shutil, ctypes)
 # ======================================================================
 def dir_size_bytes(path):
-    """Recursive size in bytes via os.scandir. Skips symlinks and unreadable."""
+    """Iterative size in bytes via os.scandir. Skips symlinks and unreadable.
+
+    Why iterative: the recursive version could blow the CPython stack
+    (RecursionError) on deeply nested trees (reachable on Windows when long-path
+    support is enabled). RecursionError is not an OSError, so the except clauses
+    cannot catch it and the whole scan would die. An explicit stack has no depth
+    limit.
+    """
     total = 0
-    try:
-        with os.scandir(path) as it:
-            for e in it:
-                try:
-                    if e.is_symlink():
+    stack = [path]
+    while stack:
+        cur = stack.pop()
+        try:
+            with os.scandir(cur) as it:
+                for e in it:
+                    try:
+                        if e.is_symlink():
+                            # On Windows this also skips junctions/mount points,
+                            # which prevents traversal loops.
+                            continue
+                        if e.is_file(follow_symlinks=False):
+                            total += e.stat(follow_symlinks=False).st_size
+                        elif e.is_dir(follow_symlinks=False):
+                            stack.append(e.path)
+                    except (PermissionError, OSError):
                         continue
-                    if e.is_file(follow_symlinks=False):
-                        total += e.stat(follow_symlinks=False).st_size
-                    elif e.is_dir(follow_symlinks=False):
-                        total += dir_size_bytes(e.path)
-                except (PermissionError, OSError):
-                    continue
-    except (PermissionError, OSError):
-        pass
+        except (PermissionError, OSError):
+            continue
     return total
 
 

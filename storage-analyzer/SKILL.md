@@ -33,6 +33,8 @@ description: >
 python3 scripts/scan.py > /tmp/storage_scan.json
 ```
 
+> **Windows 注意**：把 `python3` 换成 `python` 或 `py -3`；不要把输出写到 `/tmp/...`（Unix 路径，在 Git Bash 下会映射到奇怪位置）——写到 `%TEMP%\storage_scan.json` 或 `%USERPROFILE%\storage_scan.json` 更稳。**重定向 stdout 时务必先 `set PYTHONIOENCODING=utf-8`**：脚本用 `ensure_ascii=False` 输出 JSON，Windows 默认按系统 ANSI 编码（中文系统是 GBK），遇到 GBK 无法表示的字符会抛 `UnicodeEncodeError`。
+
 `scan.py` 自动识别系统（`sys.platform`）：
 - **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du` 算大小。
 - **Windows**：扫 user_profile、appdata_local、appdata_roaming、temp、downloads、program_files(_x86)、dev_caches，用 `os.scandir` 算大小；`system.disks` 含所有盘符。
@@ -41,7 +43,7 @@ python3 scripts/scan.py > /tmp/storage_scan.json
 
 ### Step 2 分析与分级
 
-先看 `system.os` 判断系统，读对应的数据布局参考：macOS 读 [references/macos.md](references/macos.md)，Windows 读 [references/windows.md](references/windows.md)（讲该系统东西存哪、怎么辨认、归哪一级）。然后读 `/tmp/storage_scan.json` 做这几件事：
+先看 `system.os` 判断系统，读对应的数据布局参考：macOS 读 [references/macos.md](references/macos.md)，Windows 读 [references/windows.md](references/windows.md)（讲该系统东西存哪、怎么辨认、归哪一级）。然后读扫描产物（macOS 为 `/tmp/storage_scan.json`，Windows 为 `%TEMP%\storage_scan.json`）做这几件事：
 
 1. **挑 Top 5** 占用大户，判定类型（系统资产/应用本体/应用数据/应用缓存/开发缓存/用户文件/媒体内容/下载内容/虚拟机镜像/回收站/其他）。
 2. **识别"神秘大目录"**：UUID 命名的 Container、不明的隐藏目录，要追查它属于哪个 App、装的是什么（例如某 97GB 的 UUID Container 实为 Bilibili 离线视频缓存）。必要时 `ls`/`du` 深入一层看清楚，但仍只读。
@@ -64,7 +66,7 @@ python3 scripts/scan.py > /tmp/storage_scan.json
 ```bash
 python3 scripts/server.py /tmp/storage_analysis.json   # 自动开浏览器，Ctrl+C 停
 ```
-`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。所有请求 realpath 校验 + 必须在 $HOME 内 + token + Host 校验，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
+`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。所有请求 realpath 校验 + 必须在 `$HOME` 内（macOS 另允许 `/Applications`、Windows 另允许 `Program Files` / `Program Files (x86)`，**仅 open 模式用**，删除白名单不含它们）+ token + Host 校验，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
 
 仅当用户明确只想要一份可分享/留存的只读文件时，才用静态模式（无删除按钮，因为 `file://` 打开的页面碰不到文件系统）：
 ```bash
@@ -89,13 +91,17 @@ pills 只渲染解析出的纯数字（如"约 5.5 GB"），不显示数据里�
 
 - 全部脚本是 **Python 3 标准库**，零第三方依赖（不用 pip install）。
 - **macOS** 自带 python3、`du`、`diskutil`、`osascript`，开箱即用。
-- **Windows** 默认没装 Python——需先装 Python 3，且命令多为 `python` 或 `py -3`（不是 `python3`）。本 skill 命令示例写的是 `python3`，在 Windows 上自动改用 `python` / `py -3`。
+- **Windows** 默认没装 Python——需先装 Python 3，且命令多为 `python` 或 `py -3`（不是 `python3`）。本 skill 命令示例写的是 `python3`，在 Windows 上自动改用 `python` / `py -3`；重定向输出时先 `set PYTHONIOENCODING=utf-8`，并用 `%TEMP%` 代替 `/tmp`（详见 Step 1 的 Windows 注意）。
 - 本 skill 是 **agent 驱动**：扫描出数据后由 agent（Claude）做分级分析，不是双击即用的独立 App。
 
 ## 平台状态
 
 - **macOS**：完整实现并实测（扫描 / 报告 / 一键删除全验证过）。
-- **Windows**：代码已写（`scan.py` 的 `scan_windows`、`server.py` 的 `_trash_windows` 走 `SHFileOperationW`），但**未在真实 Windows 上实测**。首次在 Windows 跑要核对：目标目录路径、`os.scandir` 大小、回收站删除是否正常。多盘符已支持（主盘分段条 + 其他盘列表）。
+- **Windows**：已在真实 Windows 11 上实测（2026-08）扫描 / 报告 / 回收站删除全链路。本次实测修复了 3 个 Windows 问题：
+  1. `dir_size_bytes` 递归改迭代——目录深度超过 Python 递归上限时会触发 `RecursionError`，而 `except (PermissionError, OSError)` 抓不到它，整次扫描直接崩溃（Windows 默认 260 字符路径限制会挡掉超深目录，需开启长路径支持后才可能触发）；
+  2. `SHFileOperationW` 在 Windows 上会把文件**成功送进回收站却返回 2**（ERROR_FILE_NOT_FOUND），原 `if rc != 0: raise` 让网页每次点「移到废纸篓」都报失败（文件其实已进回收站），已改为「rc≠0 且路径仍存在」才算失败；
+  3. 红灯 `app_paths`（如 `C:\Program Files\...`）在 Windows 上会被越界校验 403，导致「在文件管理器打开（去卸载）」按钮失效，已把 `Program Files` / `Program Files (x86)` 加入 open 模式的允许根（rm/trash 白名单不含它们，不扩大删除面）。
+  多盘符已支持（主盘分段条 + 其他盘列表）。
 
 ## 长期优化建议素材（写进报告 summary.long_term）
 
