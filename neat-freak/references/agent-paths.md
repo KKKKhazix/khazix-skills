@@ -33,8 +33,10 @@
 | Codex home | `$CODEX_HOME`，默认 `~/.codex` |
 | 全局指令 | `$CODEX_HOME/AGENTS.override.md`，不存在时读 `AGENTS.md` |
 | 项目指令 | 从项目根到当前目录逐级找 `AGENTS.override.md`、`AGENTS.md`、配置的 fallback |
-| 全局 Skills | `$CODEX_HOME/skills/<name>/SKILL.md` |
-| 项目 Skills | 项目 `.codex/skills/<name>/`（以当前 Codex 版本和环境为准） |
+| 全局 Skills | `~/.agents/skills/<name>/SKILL.md` |
+| 项目 Skills | 从当前目录到仓库根逐级发现 `.agents/skills/<name>/SKILL.md` |
+
+以上为 [Codex 当前官方技能路径](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。已有 `$CODEX_HOME/skills` 等安装时，先用当前环境的技能列表核对实际加载来源，再决定是否迁移；不要盲目复制出同名 Skill。
 
 当前官方口径：项目指令链合并后默认最多 32KiB，由 `project_doc_max_bytes` 控制；越靠近当前目录的指令越晚加载。检查 override 和 fallback，不能只找根目录 AGENTS.md。
 
