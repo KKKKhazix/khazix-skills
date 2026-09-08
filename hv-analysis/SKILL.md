@@ -212,26 +212,28 @@ prompt要描述目标（"获取""调研""了解"），不要用暗示具体手�
 ### 转换流程
 
 1. **先完成Markdown稿件**：将完整报告写为标准Markdown格式，保存为 `[研究对象]_横纵分析报告.md`
-2. **准备 Python 环境**：已有环境可用时直接复用。否则在工作目录创建虚拟环境，不向系统 Python 强行安装依赖：
+2. **准备 Python 环境**：已有环境可用时直接复用。否则在用户目录下的独立缓存位置创建虚拟环境，不在源码项目里创建环境，也不向系统 Python 强行安装依赖：
    ```bash
    # macOS / Linux
-   python3 -m venv .venv-hv-analysis
-   .venv-hv-analysis/bin/python -m pip install weasyprint markdown
+   HV_ENV_DIR="$HOME/.cache/khazix-skills/hv-analysis"
+   python3 -m venv "$HV_ENV_DIR"
+   "$HV_ENV_DIR/bin/python" -m pip install weasyprint markdown
    ```
    ```powershell
    # Windows PowerShell
-   py -3 -m venv .venv-hv-analysis
-   .\.venv-hv-analysis\Scripts\python.exe -m pip install weasyprint markdown
+   $HvEnvDir = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'khazix-skills/hv-analysis'
+   py -3 -m venv "$HvEnvDir"
+   & "$HvEnvDir\Scripts\python.exe" -m pip install weasyprint markdown
    ```
    WeasyPrint 还依赖平台原生库（例如 Pango）和所需语言的字体；按其[官方安装说明](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation)检查。Python 包安装成功不等于原生库和字体已就绪，转换前用所选解释器验证 `import weasyprint, markdown`。
 3. **运行转换脚本**：从实际加载信息取得 Skill 的绝对目录，把下面的示例路径替换为实际路径；输入、输出相对于用户工作目录：
    ```bash
-   .venv-hv-analysis/bin/python "/absolute/path/to/hv-analysis/scripts/md_to_pdf.py" input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
+   "$HV_ENV_DIR/bin/python" "/absolute/path/to/hv-analysis/scripts/md_to_pdf.py" input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
    ```
    ```powershell
-   .\.venv-hv-analysis\Scripts\python.exe "C:\actual\path\to\hv-analysis\scripts\md_to_pdf.py" input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
+   & "$HvEnvDir\Scripts\python.exe" "C:\actual\path\to\hv-analysis\scripts\md_to_pdf.py" input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
    ```
-   复用已有环境时，将上面的解释器路径替换为该环境的 Python。
+   分开运行安装与转换步骤时，保留或重新设置上面的缓存目录变量。复用已有环境时，将解释器路径替换为该环境的 Python；稿件、HTML 和 PDF 仍保存在用户指定的工作目录。
 4. 脚本会自动生成中间HTML文件（便于调试）和最终PDF
 
 ### 脚本内置的排版规范
