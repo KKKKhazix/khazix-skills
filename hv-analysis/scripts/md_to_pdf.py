@@ -20,7 +20,7 @@ CSS_TEMPLATE = """
 
     @top-center {
         content: "HEADER_TEXT";
-        font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
+        font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "Droid Sans Fallback", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Helvetica, Arial, sans-serif;
         font-size: 8pt;
         color: #95a5a6;
         border-bottom: 0.5pt solid #ecf0f1;
@@ -29,7 +29,7 @@ CSS_TEMPLATE = """
 
     @bottom-center {
         content: "第 " counter(page) " 页";
-        font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
+        font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "Droid Sans Fallback", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Helvetica, Arial, sans-serif;
         font-size: 8pt;
         color: #95a5a6;
         border-top: 0.8pt solid #1a5276;
@@ -43,7 +43,7 @@ CSS_TEMPLATE = """
 }
 
 body {
-    font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
+    font-family: "PingFang SC", "Hiragino Sans GB", "Heiti SC", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", "Droid Sans Fallback", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Helvetica, Arial, sans-serif;
     font-size: 10.5pt;
     line-height: 1.75;
     color: #2c3e50;
