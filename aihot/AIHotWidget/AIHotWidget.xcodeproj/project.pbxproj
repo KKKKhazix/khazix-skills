@@ -1,0 +1,553 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		14AB2F4C34E720E226C47FA8 /* HotspotModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19CD5BCA2E86F74EA4F7887 /* HotspotModels.swift */; };
+		38DD79E690C908CD92E9F9E3 /* HotspotWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8CD893E2AF6991DF3066F0 /* HotspotWidgets.swift */; };
+		4569BF5A9B4003851D465293 /* AIHotWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8127EDB2E5F7AF03B9ACA713 /* AIHotWidgetBundle.swift */; };
+		52936C42A81483A7B6E43CCF /* HotspotCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D96DEF74C3C103464BEA70 /* HotspotCards.swift */; };
+		57458BD974E7DE47CD346980 /* AIHotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056D5E8EAA61E3D35AA5C52A /* AIHotTests.swift */; };
+		6CD121030D17A746B774F01F /* HotspotClients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FEEFD8B4203588EEBD6BB0 /* HotspotClients.swift */; };
+		A2B7C9BE8531C8B1F1B415DB /* AIHotAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 808B2A30F44A064165616C78 /* AIHotAppearance.swift */; };
+		A3E296BA3B70FFE18BDF3E1B /* HotspotModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19CD5BCA2E86F74EA4F7887 /* HotspotModels.swift */; };
+		A687161E2EC41C0E42936A15 /* AIHotWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FE7C71EF79F7A1E11440A14A /* AIHotWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B780A0802F2539FE68B0AF2B /* HotspotClients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45FEEFD8B4203588EEBD6BB0 /* HotspotClients.swift */; };
+		C0701CC537CE4CF22BFAB8FF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82C872A59DCCB9AEBB51FA8D /* ContentView.swift */; };
+		C6EECE3337C7E10AA1D30FB7 /* AIHotApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 937CDA849A465A488F346796 /* AIHotApp.swift */; };
+		E1BA2A367E5EFE384C436188 /* AIHotAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 808B2A30F44A064165616C78 /* AIHotAppearance.swift */; };
+		EF02220CB8B73902A0AD9234 /* HotspotCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1D96DEF74C3C103464BEA70 /* HotspotCards.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4BEB175B091FD55C016D1C2C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AFE3C561185B71EB50751417 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0219E38B2CFCB97C442FC56B;
+			remoteInfo = AIHot;
+		};
+		EC9FD2065158C7FCE9E8C19F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AFE3C561185B71EB50751417 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 91821E84B99F28BB31C567C0;
+			remoteInfo = AIHotWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A8304BCDDB98E76967B91038 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A687161E2EC41C0E42936A15 /* AIHotWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		056D5E8EAA61E3D35AA5C52A /* AIHotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIHotTests.swift; sourceTree = "<group>"; };
+		1FA727D67742F4B8E2DDFA38 /* AIHotTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AIHotTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C59F78EB15C1B4712C54127 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		45FEEFD8B4203588EEBD6BB0 /* HotspotClients.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotClients.swift; sourceTree = "<group>"; };
+		5E67A4791A2821A4494BC27D /* AIHot.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIHot.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		808B2A30F44A064165616C78 /* AIHotAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIHotAppearance.swift; sourceTree = "<group>"; };
+		8127EDB2E5F7AF03B9ACA713 /* AIHotWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIHotWidgetBundle.swift; sourceTree = "<group>"; };
+		82C872A59DCCB9AEBB51FA8D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		937CDA849A465A488F346796 /* AIHotApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIHotApp.swift; sourceTree = "<group>"; };
+		AF8CD893E2AF6991DF3066F0 /* HotspotWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotWidgets.swift; sourceTree = "<group>"; };
+		D19CD5BCA2E86F74EA4F7887 /* HotspotModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotModels.swift; sourceTree = "<group>"; };
+		F1D96DEF74C3C103464BEA70 /* HotspotCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotCards.swift; sourceTree = "<group>"; };
+		F1DC74855FD20685ED8312BC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FE7C71EF79F7A1E11440A14A /* AIHotWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AIHotWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0BF64D45F49B106B98E239D9 = {
+			isa = PBXGroup;
+			children = (
+				80145CFCF1CC45F8DF7C3C87 /* AIHotApp */,
+				9F5125F99BF79978C2A4B199 /* AIHotTests */,
+				9D95C2A21F4AE74320B1BC7D /* AIHotWidgets */,
+				430F7426155733434213B23E /* Shared */,
+				F02CDFD436D54FBB41B4A599 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		430F7426155733434213B23E /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				808B2A30F44A064165616C78 /* AIHotAppearance.swift */,
+				F1D96DEF74C3C103464BEA70 /* HotspotCards.swift */,
+				45FEEFD8B4203588EEBD6BB0 /* HotspotClients.swift */,
+				D19CD5BCA2E86F74EA4F7887 /* HotspotModels.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		80145CFCF1CC45F8DF7C3C87 /* AIHotApp */ = {
+			isa = PBXGroup;
+			children = (
+				937CDA849A465A488F346796 /* AIHotApp.swift */,
+				82C872A59DCCB9AEBB51FA8D /* ContentView.swift */,
+				F1DC74855FD20685ED8312BC /* Info.plist */,
+			);
+			path = AIHotApp;
+			sourceTree = "<group>";
+		};
+		9D95C2A21F4AE74320B1BC7D /* AIHotWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				8127EDB2E5F7AF03B9ACA713 /* AIHotWidgetBundle.swift */,
+				AF8CD893E2AF6991DF3066F0 /* HotspotWidgets.swift */,
+				2C59F78EB15C1B4712C54127 /* Info.plist */,
+			);
+			path = AIHotWidgets;
+			sourceTree = "<group>";
+		};
+		9F5125F99BF79978C2A4B199 /* AIHotTests */ = {
+			isa = PBXGroup;
+			children = (
+				056D5E8EAA61E3D35AA5C52A /* AIHotTests.swift */,
+			);
+			path = AIHotTests;
+			sourceTree = "<group>";
+		};
+		F02CDFD436D54FBB41B4A599 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5E67A4791A2821A4494BC27D /* AIHot.app */,
+				1FA727D67742F4B8E2DDFA38 /* AIHotTests.xctest */,
+				FE7C71EF79F7A1E11440A14A /* AIHotWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0219E38B2CFCB97C442FC56B /* AIHot */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DA3190E0C010159B96A148FC /* Build configuration list for PBXNativeTarget "AIHot" */;
+			buildPhases = (
+				C0A631884BCB0D13B49D922A /* Sources */,
+				A8304BCDDB98E76967B91038 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				76C9231E9066AD49A3BE2D8C /* PBXTargetDependency */,
+			);
+			name = AIHot;
+			packageProductDependencies = (
+			);
+			productName = AIHot;
+			productReference = 5E67A4791A2821A4494BC27D /* AIHot.app */;
+			productType = "com.apple.product-type.application";
+		};
+		91821E84B99F28BB31C567C0 /* AIHotWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 05B7193F4766E7AEE843C09E /* Build configuration list for PBXNativeTarget "AIHotWidgets" */;
+			buildPhases = (
+				97C9C7605BFC11AFCA79864E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AIHotWidgets;
+			packageProductDependencies = (
+			);
+			productName = AIHotWidgets;
+			productReference = FE7C71EF79F7A1E11440A14A /* AIHotWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		DEF6BE6E43D2E357AE04D0F9 /* AIHotTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 06F7CCDC3158AF08DA84F9BD /* Build configuration list for PBXNativeTarget "AIHotTests" */;
+			buildPhases = (
+				EDEE5EC3C430EDB5940BCEC8 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				25C17DF53B17965D1CFA45B6 /* PBXTargetDependency */,
+			);
+			name = AIHotTests;
+			packageProductDependencies = (
+			);
+			productName = AIHotTests;
+			productReference = 1FA727D67742F4B8E2DDFA38 /* AIHotTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AFE3C561185B71EB50751417 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					DEF6BE6E43D2E357AE04D0F9 = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = E12F844C44BFCEDAF4A497E8 /* Build configuration list for PBXProject "AIHotWidget" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 0BF64D45F49B106B98E239D9;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F02CDFD436D54FBB41B4A599 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				0219E38B2CFCB97C442FC56B /* AIHot */,
+				DEF6BE6E43D2E357AE04D0F9 /* AIHotTests */,
+				91821E84B99F28BB31C567C0 /* AIHotWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		97C9C7605BFC11AFCA79864E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A2B7C9BE8531C8B1F1B415DB /* AIHotAppearance.swift in Sources */,
+				4569BF5A9B4003851D465293 /* AIHotWidgetBundle.swift in Sources */,
+				EF02220CB8B73902A0AD9234 /* HotspotCards.swift in Sources */,
+				6CD121030D17A746B774F01F /* HotspotClients.swift in Sources */,
+				A3E296BA3B70FFE18BDF3E1B /* HotspotModels.swift in Sources */,
+				38DD79E690C908CD92E9F9E3 /* HotspotWidgets.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0A631884BCB0D13B49D922A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C6EECE3337C7E10AA1D30FB7 /* AIHotApp.swift in Sources */,
+				E1BA2A367E5EFE384C436188 /* AIHotAppearance.swift in Sources */,
+				C0701CC537CE4CF22BFAB8FF /* ContentView.swift in Sources */,
+				52936C42A81483A7B6E43CCF /* HotspotCards.swift in Sources */,
+				B780A0802F2539FE68B0AF2B /* HotspotClients.swift in Sources */,
+				14AB2F4C34E720E226C47FA8 /* HotspotModels.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EDEE5EC3C430EDB5940BCEC8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				57458BD974E7DE47CD346980 /* AIHotTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		25C17DF53B17965D1CFA45B6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0219E38B2CFCB97C442FC56B /* AIHot */;
+			targetProxy = 4BEB175B091FD55C016D1C2C /* PBXContainerItemProxy */;
+		};
+		76C9231E9066AD49A3BE2D8C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 91821E84B99F28BB31C567C0 /* AIHotWidgets */;
+			targetProxy = EC9FD2065158C7FCE9E8C19F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		07BCAD1A8FA73C624444290B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = AIHotWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.aihotwidget.widgets;
+				PRODUCT_NAME = AIHotWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		39AA8B78DA5176C4CE2F40DB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = AIHotWidgets/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.aihotwidget.widgets;
+				PRODUCT_NAME = AIHotWidgets;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		843DCA54D88ABFD15EB56F5C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.aihotwidget.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AIHot.app/AIHot";
+			};
+			name = Debug;
+		};
+		8B77CBDD155264EAA1FDC229 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = AIHotApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.aihotwidget;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		98F951CA5C3CEED6E27C865A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		9FD33D5025CA3A24DB2B889C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		B74088AF5C9F249B882F6688 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.aihotwidget.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AIHot.app/AIHot";
+			};
+			name = Release;
+		};
+		D26B591FD1831E4EFE70F536 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = AIHotApp/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.aihotwidget;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		05B7193F4766E7AEE843C09E /* Build configuration list for PBXNativeTarget "AIHotWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				07BCAD1A8FA73C624444290B /* Debug */,
+				39AA8B78DA5176C4CE2F40DB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		06F7CCDC3158AF08DA84F9BD /* Build configuration list for PBXNativeTarget "AIHotTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				843DCA54D88ABFD15EB56F5C /* Debug */,
+				B74088AF5C9F249B882F6688 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DA3190E0C010159B96A148FC /* Build configuration list for PBXNativeTarget "AIHot" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B77CBDD155264EAA1FDC229 /* Debug */,
+				D26B591FD1831E4EFE70F536 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E12F844C44BFCEDAF4A497E8 /* Build configuration list for PBXProject "AIHotWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				98F951CA5C3CEED6E27C865A /* Debug */,
+				9FD33D5025CA3A24DB2B889C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AFE3C561185B71EB50751417 /* Project object */;
+}
