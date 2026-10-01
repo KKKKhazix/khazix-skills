@@ -45,7 +45,15 @@ Install this skill: https://github.com/KKKKhazix/khazix-skills/tree/main/<skill-
 
 Replace `<skill-name>` with the one you want — e.g. `neat-freak`, `hv-analysis`, `khazix-writer`. The agent will clone it into the right directory for you.
 
-Agent doesn't support Skills? Download the `SKILL.md` from the skill's directory and hand it to your agent as a project rule file (or paste it into the conversation) — same effect.
+### Install and invoke in Codex
+
+Install the **complete skill directory** into `~/.agents/skills/<skill-name>/` for user scope, or `.agents/skills/<skill-name>/` inside a project. Keep supporting `references/`, `scripts/`, and `assets/`; copying only `SKILL.md` loses capabilities. For an existing installation, check the loaded path before adding another copy with the same name.
+
+Invoke a skill explicitly, for example `$hv-analysis` or `$neat-freak`, or choose it with `/skills` in the CLI. Follow the [official Codex skill paths](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills) and the current environment's skill list.
+
+Resolve relative resources from the directory containing that skill's `SKILL.md`, not from the user's project working directory. Run scripts by their quoted absolute paths and keep inputs and outputs in the user's chosen working directory. `hv-analysis` also needs Python, WeasyPrint, and Markdown; `storage-analyzer` retains the OS support documented in its skill.
+
+If an agent does not support Skills, provide `SKILL.md` as a project rule or conversation instruction, together with its referenced resources as needed.
 
 ---
 

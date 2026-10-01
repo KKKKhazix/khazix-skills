@@ -19,7 +19,9 @@ description: |
 
 ### 环境准备
 
-1. **确认PDF转换脚本可用**：本Skill自带 `scripts/md_to_pdf.py`（基于WeasyPrint），用于将最终Markdown报告转为排版精美的PDF。确保依赖已安装：`pip install weasyprint markdown --break-system-packages`。
+本 Skill 可用于 Claude Code、Codex 等 Agent Skills 环境。先从当前技能列表或加载信息定位本 `SKILL.md`；下文的 `scripts/`、`references/` 均相对于这个 Skill 目录。不要假设工作目录就是 Skill 目录，也不要假设存在某个容器路径。
+
+1. **确认PDF转换脚本可用**：本Skill自带 `scripts/md_to_pdf.py`（基于WeasyPrint），用于将最终Markdown报告转为排版精美的PDF。优先使用已有且能导入 `weasyprint`、`markdown` 的 Python 环境；缺依赖时按第五步创建独立虚拟环境。
 2. **写作风格**：本Skill已内置完整的写作风格指南（见下文"写作风格"部分），无需额外加载其他skill。
 
 ### 明确研究对象
@@ -39,7 +41,7 @@ description: |
 
 ### 并行搜索策略
 
-使用子Agent并行搜索来提高效率。建议的分工：
+当前环境提供子 Agent 能力时，用其实际提供的协作工具并行调研；未提供时，由主 Agent 依次完成同样的研究分工，不虚构工具或跳过某条研究轴。建议的分工：
 
 - **子Agent 1 — 纵向信息**：研究对象的起源、创始人背景、发展历程、关键事件、版本迭代、融资、战略转向、危机
 - **子Agent 2 — 横向信息**：竞品识别、各竞品的特点和用户口碑、行业对比评测、市场份额
@@ -49,14 +51,15 @@ description: |
 
 每个子Agent的prompt中必须包含以下联网指引：
 
-> 你需要联网获取信息。使用以下工具：
-> - **WebSearch**：用于搜索发现信息来源，获取摘要和关键词结果
-> - **WebFetch**：当已知具体URL时，用于从页面定向提取内容
-> - 如果用户环境中安装了 web-access skill（检查路径 `/mnt/.claude/skills/web-access/SKILL.md` 是否存在），优先加载它并遵循其指引，它提供更强的浏览器CDP能力
-> - 搜索策略：先用WebSearch发现信息来源和线索，找到具体URL后用WebFetch深入提取
+> 你需要联网获取信息，先确认当前环境实际提供的工具：
+> - **搜索能力**：发现信息来源、摘要和关键词线索。Claude Code 中可使用 WebSearch；Codex 等环境使用当前工具列表提供的网页搜索能力，不按名称调用不存在的工具。
+> - **页面读取能力**：已知 URL 时定向读取页面。Claude Code 中可使用 WebFetch；其他环境使用可用的网页打开、读取或浏览器工具。
+> - 若当前技能列表提供 web-access，按列表给出的实际路径加载；没有安装时继续使用现有联网工具，不依赖 `/mnt/.claude` 等固定路径。
+> - 无联网能力时明确说明限制，不能把记忆中的信息当成本次已检索的结果。
+> - 搜索策略：先发现信息来源和线索，找到具体 URL 后深入读取
 > - 多次搜索、多个关键词组合，不要只搜一次就放弃
 > - 一手来源优于二手来源：官方博客 > 权威媒体原创报道 > 转载/聚合
-> - **学术类研究对象必查arxiv**：如果研究对象涉及学术概念、算法、AI模型、技术范式等，必须通过arxiv API获取相关论文。调用方式：`curl -s "https://export.arxiv.org/api/query?search_query=all:关键词1+AND+all:关键词2&max_results=10"`，或用WebFetch访问同一URL。返回XML格式，包含标题、作者、摘要、发布日期、PDF链接。可按需调整关键词组合和结果数量。找到关键论文后，用WebFetch读取论文页面（`https://arxiv.org/abs/论文ID`）获取更多细节。
+> - **学术类研究对象必查arxiv**：如果研究对象涉及学术概念、算法、AI模型、技术范式等，必须通过arxiv API获取相关论文。调用方式：`curl -s "https://export.arxiv.org/api/query?search_query=all:关键词1+AND+all:关键词2&max_results=10"`，或用当前可用的页面读取工具访问同一URL。返回XML格式，包含标题、作者、摘要、发布日期、PDF链接。可按需调整关键词组合和结果数量。找到关键论文后，用当前可用的页面读取工具读取论文页面（`https://arxiv.org/abs/论文ID`）获取更多细节。
 
 prompt要描述目标（"获取""调研""了解"），不要用暗示具体手段的动词（"搜索""爬取"），让子Agent自主判断最佳获取方式。
 
@@ -209,11 +212,28 @@ prompt要描述目标（"获取""调研""了解"），不要用暗示具体手�
 ### 转换流程
 
 1. **先完成Markdown稿件**：将完整报告写为标准Markdown格式，保存为 `[研究对象]_横纵分析报告.md`
-2. **安装依赖**（如未安装）：`pip install weasyprint markdown --break-system-packages`
-3. **运行转换脚本**：
+2. **准备 Python 环境**：已有环境可用时直接复用。否则在用户目录下的独立缓存位置创建虚拟环境，不在源码项目里创建环境，也不向系统 Python 强行安装依赖：
    ```bash
-   python [skill目录]/scripts/md_to_pdf.py input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
+   # macOS / Linux
+   HV_ENV_DIR="$HOME/.cache/khazix-skills/hv-analysis"
+   python3 -m venv "$HV_ENV_DIR"
+   "$HV_ENV_DIR/bin/python" -m pip install weasyprint markdown
    ```
+   ```powershell
+   # Windows PowerShell
+   $HvEnvDir = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'khazix-skills/hv-analysis'
+   py -3 -m venv "$HvEnvDir"
+   & "$HvEnvDir\Scripts\python.exe" -m pip install weasyprint markdown
+   ```
+   WeasyPrint 还依赖平台原生库（例如 Pango）和所需语言的字体；按其[官方安装说明](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation)检查。Python 包安装成功不等于原生库和字体已就绪，转换前用所选解释器验证 `import weasyprint, markdown`。
+3. **运行转换脚本**：从实际加载信息取得 Skill 的绝对目录，把下面的示例路径替换为实际路径；输入、输出相对于用户工作目录：
+   ```bash
+   "$HV_ENV_DIR/bin/python" "/absolute/path/to/hv-analysis/scripts/md_to_pdf.py" input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
+   ```
+   ```powershell
+   & "$HvEnvDir\Scripts\python.exe" "C:\actual\path\to\hv-analysis\scripts\md_to_pdf.py" input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
+   ```
+   分开运行安装与转换步骤时，保留或重新设置上面的缓存目录变量。复用已有环境时，将解释器路径替换为该环境的 Python；稿件、HTML 和 PDF 仍保存在用户指定的工作目录。
 4. 脚本会自动生成中间HTML文件（便于调试）和最终PDF
 
 ### 脚本内置的排版规范

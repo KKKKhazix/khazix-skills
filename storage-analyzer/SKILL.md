@@ -27,10 +27,15 @@ description: >
 
 ## 执行流程
 
+从当前加载的本 `SKILL.md` 定位 Skill 目录。下文 `scripts/...`、`references/...` 均相对该目录；执行时使用带引号的脚本绝对路径，不要求 Claude Code 或 Codex 把用户项目的工作目录切到 Skill 目录。扫描结果、分析 JSON 和报告路径则按当前系统及用户工作目录选择。
+
 ### Step 1 扫描（只读）
 
+将 `STORAGE_SKILL_DIR` 设置为当前实际加载的 Skill 绝对目录。以下 macOS（Bash/zsh）示例中的 `/实际/路径` 必须先替换；分开运行各步骤时保留或重新设置同一个变量。
+
 ```bash
-python3 scripts/scan.py > /tmp/storage_scan.json
+STORAGE_SKILL_DIR="/实际/路径/storage-analyzer"
+python3 "$STORAGE_SKILL_DIR/scripts/scan.py" > /tmp/storage_scan.json
 ```
 
 `scan.py` 自动识别系统（`sys.platform`）：
@@ -62,13 +67,13 @@ python3 scripts/scan.py > /tmp/storage_scan.json
 
 **默认用一键删除模式（`server.py`）打开报告**，因为这个 skill 的核心价值就是网页上能直接清理：
 ```bash
-python3 scripts/server.py /tmp/storage_analysis.json   # 自动开浏览器，Ctrl+C 停
+python3 "$STORAGE_SKILL_DIR/scripts/server.py" /tmp/storage_analysis.json   # 自动开浏览器，Ctrl+C 停
 ```
 `server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。所有请求 realpath 校验 + 必须在 $HOME 内 + token + Host 校验，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
 
 仅当用户明确只想要一份可分享/留存的只读文件时，才用静态模式（无删除按钮，因为 `file://` 打开的页面碰不到文件系统）：
 ```bash
-python3 scripts/build_report.py /tmp/storage_analysis.json ~/Desktop/storage-report.html && open ~/Desktop/storage-report.html
+python3 "$STORAGE_SKILL_DIR/scripts/build_report.py" /tmp/storage_analysis.json "$HOME/Desktop/storage-report.html" && open "$HOME/Desktop/storage-report.html"
 ```
 
 **排障：网页上没有删除/移废纸篓按钮** = 要么开的是静态报告（改用 `server.py`），要么 🟢 项漏了 `trash_paths`（补上重启服务）。
@@ -89,8 +94,8 @@ pills 只渲染解析出的纯数字（如"约 5.5 GB"），不显示数据里�
 
 - 全部脚本是 **Python 3 标准库**，零第三方依赖（不用 pip install）。
 - **macOS** 自带 python3、`du`、`diskutil`、`osascript`，开箱即用。
-- **Windows** 默认没装 Python——需先装 Python 3，且命令多为 `python` 或 `py -3`（不是 `python3`）。本 skill 命令示例写的是 `python3`，在 Windows 上自动改用 `python` / `py -3`。
-- 本 skill 是 **agent 驱动**：扫描出数据后由 agent（Claude）做分级分析，不是双击即用的独立 App。
+- **Windows** 默认没装 Python——需先装 Python 3，且命令多为 `python` 或 `py -3`（不是 `python3`）。本 skill 命令示例写的是 `python3`，在 Windows 上改用 `python` / `py -3`，按所用 shell 设置 Skill 绝对路径变量，并将 `/tmp`、`open` 替换为 Windows 临时目录和文件打开方式；扫描 JSON 必须以 UTF-8 保存。
+- 本 skill 是 **agent 驱动**：扫描出数据后由当前 Agent（例如 Claude Code、Codex）做分级分析，不是双击即用的独立 App。
 
 ## 平台状态
 

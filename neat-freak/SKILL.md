@@ -97,7 +97,7 @@ metadata:
 ### 0. 发现平台、规则和体量
 
 - 完整读取当前 skill、本项目和上级作用域中实际生效的规则文件。
-- 先运行只读盘点：`bash scripts/audit-inventory.sh <project-root>`；脚本不可用时做等价检查。
+- 以当前加载的本 `SKILL.md` 所在目录解析 `scripts/`、`references/`，不要相对于用户项目工作目录查找。先运行只读盘点：`bash "/实际/neat-freak/scripts/audit-inventory.sh" "/项目绝对路径"`（替换为实际路径，保留引号）；脚本不可用时做等价检查。
 - 记录规则文件、Markdown 清单、软链状态、Git/worktree 状态和关键文件体量。
 - 使用 [references/agent-paths.md](references/agent-paths.md) 的平台专属预算；未列出的平台按其中的三分法探测归类，不能把 Claude 自动记忆和 Codex 项目指令/生成记忆当成同一种文件。
 

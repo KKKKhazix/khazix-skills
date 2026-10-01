@@ -3,7 +3,7 @@
 横纵分析法报告 Markdown → PDF 转换脚本 (WeasyPrint版)
 用法: python md_to_pdf.py input.md output.pdf [--title "报告标题"] [--author "作者"]
 
-依赖: pip install weasyprint markdown --break-system-packages
+依赖: 在虚拟环境中 python -m pip install weasyprint markdown（原生库要求见 SKILL.md）
 """
 
 import sys

@@ -45,7 +45,15 @@
 
 把 `<skill-name>` 换成你想装的那个，比如 `neat-freak`、`hv-analysis`、`khazix-writer`。Agent 会自己 clone 到对应目录，不用你操心路径。
 
-你的 Agent 不支持 Skill 也没关系：把对应目录的 `SKILL.md` 全文下载下来，当成项目规则文件（或直接贴进对话）让 Agent 照着执行，效果一致。
+### Codex 安装与调用
+
+将所选 Skill 的**完整目录**安装到 `~/.agents/skills/<skill-name>/`（用户级），或项目中的 `.agents/skills/<skill-name>/`（项目级）。保留 `references/`、`scripts/`、`assets/` 等配套文件；只复制 `SKILL.md` 会丢失部分能力。已有安装先确认实际加载路径，避免重复安装同名 Skill。
+
+在 Codex 中可直接点名，例如 `$hv-analysis`、`$neat-freak`；CLI 也可用 `/skills` 选择。路径以 [Codex 官方技能文档](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)及当前环境的技能列表为准。
+
+Skill 中的相对资源路径以该 Skill 的 `SKILL.md` 所在目录为基准，不是用户项目的工作目录。运行脚本时解析并引用脚本的绝对路径，将输入和输出放在用户指定的工作目录。`hv-analysis` 还需要 Python、WeasyPrint 和 Markdown；`storage-analyzer` 的系统支持范围仍以其平台说明为准。
+
+你的 Agent 不支持 Skill 也没关系：把 `SKILL.md` 当成项目规则文件（或直接贴进对话），并提供其中按需引用的参考资料、脚本和资产。
 
 ---
 
