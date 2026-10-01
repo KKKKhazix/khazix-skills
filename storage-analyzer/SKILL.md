@@ -16,7 +16,7 @@ description: >
 
 # Storage Analyzer
 
-对 macOS 做一次只读存储分析，产出交互式 HTML 报告。流程：扫描 → 分析分级 → 生成网页 → 打开。
+对 macOS / Windows 做一次只读存储分析，产出交互式 HTML 报告。流程：扫描 → 分析分级 → 生成网页 → 打开。
 
 ## 铁律
 
