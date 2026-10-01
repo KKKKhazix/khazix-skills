@@ -122,7 +122,13 @@ def _trash_windows(path):
     op.pFrom = os.path.abspath(path) + "\x00\x00"  # double-null terminated list
     op.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT
     rc = ctypes.windll.shell32.SHFileOperationW(ctypes.byref(op))
-    if rc != 0:
+    # Windows note (verified on Windows 11): SHFileOperationW is observed to
+    # move the item into the Recycle Bin correctly and STILL return 2
+    # (ERROR_FILE_NOT_FOUND). Trusting rc alone produced false "failed" errors
+    # in the report UI for deletions that had in fact succeeded (the item was
+    # already in the Recycle Bin). Only a non-zero rc combined with the path
+    # still existing is a real failure.
+    if rc != 0 and os.path.exists(path):
         raise OSError("SHFileOperation failed (code %d)" % rc)
 
 
@@ -206,8 +212,15 @@ class Handler(BaseHTTPRequestHandler):
             if rp not in allow:
                 self._send(403, json.dumps({"ok": False, "error": "路径不在白名单：%s" % p}))
                 return
-            # 二级护栏：只允许用户目录或 /Applications（后者仅 open 用，删除白名单不含它）
-            roots = (HOME, "/Applications")
+            # 二级护栏：只允许用户目录或应用安装根（后者仅 open 用，删除白名单不含它）
+            # macOS 的 /Applications；Windows 的 Program Files / Program Files (x86)。
+            # rm/trash 白名单永远不会包含这些根下的路径，所以放宽 roots 不会扩大删除面。
+            roots = [HOME, "/Applications"]
+            if sys.platform.startswith("win"):
+                roots += [
+                    os.environ.get("ProgramFiles", r"C:\Program Files"),
+                    os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"),
+                ]
             if not any(rp == base or rp.startswith(base + os.sep) for base in roots):
                 self._send(403, json.dumps({"ok": False, "error": "路径越界：%s" % p}))
                 return
