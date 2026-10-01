@@ -62,9 +62,16 @@ python3 scripts/scan.py > /tmp/storage_scan.json
 
 **默认用一键删除模式（`server.py`）打开报告**，因为这个 skill 的核心价值就是网页上能直接清理：
 ```bash
-python3 scripts/server.py /tmp/storage_analysis.json   # 自动开浏览器，Ctrl+C 停
+python3 -u scripts/server.py /tmp/storage_analysis.json   # 自动开浏览器，Ctrl+C 停
 ```
-`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。所有请求 realpath 校验 + 必须在 $HOME 内 + token + Host 校验，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
+`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token，连续 30 分钟无请求会自动退出；传 `--idle-timeout 0` 可禁用自动退出。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。所有请求 realpath 校验 + 必须在 $HOME 内 + token + Host 校验，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
+
+在 Agent 工具中启动服务时：
+
+1. 使用可继续写入和终止的托管执行会话，不要用脱离任务生命周期的后台进程。
+2. 启动一次后先读取输出中的 URL；不要因为工具等待超时或日志暂时为空而重复启动。
+3. 无论任务成功、失败还是被中断，都在收尾阶段停止执行会话及其子进程。
+4. 回复用户前检查没有遗留的 `server.py` 进程和监听端口。空闲超时是最后一道兜底，不能替代主动回收。
 
 仅当用户明确只想要一份可分享/留存的只读文件时，才用静态模式（无删除按钮，因为 `file://` 打开的页面碰不到文件系统）：
 ```bash

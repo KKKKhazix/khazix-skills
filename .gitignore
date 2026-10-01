@@ -1,6 +1,10 @@
 # macOS
 .DS_Store
 
+# Python bytecode caches
+__pycache__/
+*.py[cod]
+
 # Syncthing / cloud-sync conflict copies
 .sync-conflict-*
 
