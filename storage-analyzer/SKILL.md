@@ -1,22 +1,23 @@
 ---
 name: storage-analyzer
 description: >
-  macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出
+  macOS / Windows / Linux 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出
   占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出
   可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可
   起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景
   使用：用户说"存储分析""磁盘满了""C盘/硬盘满了""空间不够""清理空间"
   "清理磁盘""占空间""哪些东西占地方""帮我看看存储""看一下电脑存储/空间"
   "存储空间""电脑空间不够""内存满了/不够/不足""看下内存/存储"（中文口语里
-  "内存"常指存储空间）"storage analysis""disk cleanup""清缓存""磁盘清理"；
-  或用户抱怨电脑没空间、想知道什么东西吃硬盘、想要清理建议时。注意：若用户明确
+  "内存"常指存储空间）"storage analysis""disk cleanup""清缓存""磁盘清理"
+  "No space left on device""inode 用完了"；或用户抱怨电脑没空间、想知道什么
+  东西吃硬盘、想要清理建议时。注意：若用户明确
   指运行内存/RAM（如"哪个进程吃内存""内存占用高"想看活动监视器），那是 RAM
   不是存储，不属于本 skill。
 ---
 
 # Storage Analyzer
 
-对 macOS 做一次只读存储分析，产出交互式 HTML 报告。流程：扫描 → 分析分级 → 生成网页 → 打开。
+对 macOS / Windows / Linux 做一次只读存储分析，产出交互式 HTML 报告。流程：扫描 → 分析分级 → 生成网页 → 打开。
 
 ## 铁律
 
@@ -36,12 +37,15 @@ python3 scripts/scan.py > /tmp/storage_scan.json
 `scan.py` 自动识别系统（`sys.platform`）：
 - **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du` 算大小。
 - **Windows**：扫 user_profile、appdata_local、appdata_roaming、temp、downloads、program_files(_x86)、dev_caches，用 `os.scandir` 算大小；`system.disks` 含所有盘符。
+- **Linux**：扫 home、cache、local_share、config、downloads、flatpak_apps、snap_home、opt、usr_local、dev_caches，用 `du -x` 算大小（`-x` 不跨挂载点，否则外置盘会被算进主盘）。另有两组 Linux 专有：`sudo_targets`（/var/lib/docker、/var/log 等 root 大户，读不到就标 `denied`）和 `uncategorized`（$HOME 与 /var 各一层兜底下钻，捞出目标表没覆盖到的大目录）。`system.disks` 含所有本地挂载点（已滤掉 tmpfs / squashfs / 网络盘）。
 
 输出 JSON：`system`（系统/磁盘信息，含 `disk_name` 主盘名 + `disks` 全部盘）+ `groups`（各组子目录大小，已降序、过滤 50MB 以下）。扫描较慢，耐心等。读不到的目录标 `denied`，需在报告里列出并提示遗漏体量。
 
+**Linux 另有 `accounting` 字段（缺口对账），必须读**：Linux 上 `du` 对 root 目录是**静默低估**（读不到算作 0 还返回成功），不对账就会把大户报错。对账**按文件系统分别进行**（`per_filesystem` 数组），因为 `/home` 独立分区极常见，合并算会捏造出巨额假重叠。每项的 `gap_kb` 归入该盘蓝色「系统及其他」并提示可用 sudo 核实；若出现 `overlap_kb`（合计超过实际已用），说明有硬链接缓存被重复计数（也可能是压缩/reflink/稀疏文件），相关项的"可释放空间"要注明实际释放量可能更小。条目上的 `partial: true` 表示 `du` 没读全、实际更大；`mountpoint: true` 表示该子目录是另一块盘的挂载点，不计入本盘。
+
 ### Step 2 分析与分级
 
-先看 `system.os` 判断系统，读对应的数据布局参考：macOS 读 [references/macos.md](references/macos.md)，Windows 读 [references/windows.md](references/windows.md)（讲该系统东西存哪、怎么辨认、归哪一级）。然后读 `/tmp/storage_scan.json` 做这几件事：
+先看 `system.os` 判断系统，读对应的数据布局参考：macOS 读 [references/macos.md](references/macos.md)，Windows 读 [references/windows.md](references/windows.md)，Linux 读 [references/linux.md](references/linux.md)（讲该系统东西存哪、怎么辨认、归哪一级）。然后读 `/tmp/storage_scan.json` 做这几件事：
 
 1. **挑 Top 5** 占用大户，判定类型（系统资产/应用本体/应用数据/应用缓存/开发缓存/用户文件/媒体内容/下载内容/虚拟机镜像/回收站/其他）。
 2. **识别"神秘大目录"**：UUID 命名的 Container、不明的隐藏目录，要追查它属于哪个 App、装的是什么（例如某 97GB 的 UUID Container 实为 Bilibili 离线视频缓存）。必要时 `ls`/`du` 深入一层看清楚，但仍只读。
@@ -64,11 +68,17 @@ python3 scripts/scan.py > /tmp/storage_scan.json
 ```bash
 python3 scripts/server.py /tmp/storage_analysis.json   # 自动开浏览器，Ctrl+C 停
 ```
-`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。所有请求 realpath 校验 + 必须在 $HOME 内 + token + Host 校验，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
+`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。所有请求 realpath 校验 + 必须在 $HOME 内 + token + Host 校验，每次点击浏览器先 confirm。入废纸篓的机制按平台：macOS osascript（首次弹访达自动化授权点允许即可）、Windows SHFileOperationW、Linux 走 XDG Trash（`gio trash` → `trash-put` → 标准库手写 `.trashinfo` 三级回退）。
 
-仅当用户明确只想要一份可分享/留存的只读文件时，才用静态模式（无删除按钮，因为 `file://` 打开的页面碰不到文件系统）：
+**Linux 两条额外约束**（细节见 [references/linux.md](references/linux.md)）：
+- **跨文件系统的项不给 `trash_paths`。** 废纸篓只在其自身所在的文件系统内可用；挂在 `/mnt`、`/media`、外置盘上的项即使是绿灯也不该给。给了也会被 `server.py` 挡在破坏性白名单外，按钮不会出现。这类项只给可复制命令。
+- **`sudo_targets` 组的项 `trash_paths` 一律留空**，标题带 `[需 sudo]`。它们照常上灯（`/var/log`、apt 缓存等多为 🟢）、照常给命令，但一键删除通道对它们物理关闭——`server.py` 按 `needs_sudo` 标记强制拒绝，不靠本文档的约定。这正是"删除命令只展示，用户自己在终端确认后运行"的标准形态。
+
+**无头环境（Linux 服务器 SSH，无 `DISPLAY`/`WAYLAND_DISPLAY`）跳过整个 Step 3**：不渲染 HTML、不起服务，直接进 Step 4 在对话里给完整诊断。调用方本来就是 agent，产物应该是对话里的结论，而不是一个要 `scp` 才能看的文件。此时 Step 4 从"一段话摘要"扩展为完整诊断：磁盘总览 → Top5 → 三级清单（含可复制命令）→ 长期建议。
+
+仅当用户明确只想要一份可分享/留存的只读文件时，才用静态模式（无删除按钮，因为 `file://` 打开的页面碰不到文件系统）。打开命令按平台：macOS `open`、Windows `start`、Linux `xdg-open`（脚本运行完会打印正确的那条）：
 ```bash
-python3 scripts/build_report.py /tmp/storage_analysis.json ~/Desktop/storage-report.html && open ~/Desktop/storage-report.html
+python3 scripts/build_report.py /tmp/storage_analysis.json ~/Desktop/storage-report.html
 ```
 
 **排障：网页上没有删除/移废纸篓按钮** = 要么开的是静态报告（改用 `server.py`），要么 🟢 项漏了 `trash_paths`（补上重启服务）。
@@ -90,15 +100,17 @@ pills 只渲染解析出的纯数字（如"约 5.5 GB"），不显示数据里�
 - 全部脚本是 **Python 3 标准库**，零第三方依赖（不用 pip install）。
 - **macOS** 自带 python3、`du`、`diskutil`、`osascript`，开箱即用。
 - **Windows** 默认没装 Python——需先装 Python 3，且命令多为 `python` 或 `py -3`（不是 `python3`）。本 skill 命令示例写的是 `python3`，在 Windows 上自动改用 `python` / `py -3`。
+- **Linux** 自带 python3、`du`、`df`，开箱即用。废纸篓优先用 `gio`（glib2 附带，桌面版一般有）或 `trash-put`（trash-cli），两者都没有时退回标准库手写 XDG `.trashinfo`，功能等价、无需安装任何东西。
 - 本 skill 是 **agent 驱动**：扫描出数据后由 agent（Claude）做分级分析，不是双击即用的独立 App。
 
 ## 平台状态
 
 - **macOS**：完整实现并实测（扫描 / 报告 / 一键删除全验证过）。
+- **Linux**：完整实现并实测于 Ubuntu 24.04（扫描 39s / 缺口对账 / XDG 废纸篓写入与 `gio trash --restore` 还原闭环全验证过）。已覆盖多挂载点、`du -x` 不跨盘、sudo 项只读展示、无头降级。
 - **Windows**：代码已写（`scan.py` 的 `scan_windows`、`server.py` 的 `_trash_windows` 走 `SHFileOperationW`），但**未在真实 Windows 上实测**。首次在 Windows 跑要核对：目标目录路径、`os.scandir` 大小、回收站删除是否正常。多盘符已支持（主盘分段条 + 其他盘列表）。
 
 ## 长期优化建议素材（写进报告 summary.long_term）
 
-- 定期清理：`brew cleanup`、Xcode DerivedData、浏览器缓存
-- 可视化工具：DaisyDisk、GrandPerspective、OmniDiskSweeper
-- 大文件归档到外置盘 / iCloud / NAS；macOS「系统设置 > 通用 > 储存空间」的优化选项
+- macOS：`brew cleanup`、Xcode DerivedData、浏览器缓存；DaisyDisk / GrandPerspective / OmniDiskSweeper；「系统设置 > 通用 > 储存空间」的优化选项
+- Linux：`docker system prune -a`、`conda clean -a`、`uv cache clean`、`journalctl --vacuum-time=7d`、`sudo apt autoremove --purge` 清旧内核；ncdu / baobab / filelight
+- 通用：大文件归档到外置盘 / iCloud / NAS
