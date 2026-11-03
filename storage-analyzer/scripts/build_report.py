@@ -34,14 +34,14 @@ def main():
         sys.exit(1)
     src = sys.argv[1]
     out = sys.argv[2] if len(sys.argv) > 2 else os.path.expanduser(
-        "~/Desktop/storage-report.html")
+        "storage-report.html")
 
-    with open(src, "r", encoding="utf-8") as f:
+    with open(src, "r", encoding="utf-8-sig") as f:
         data = json.load(f)
-    with open(TEMPLATE, "r", encoding="utf-8") as f:
+    with open(TEMPLATE, "r", encoding="utf-8-sig") as f:
         tpl = f.read()
 
-    blob = json.dumps(data, ensure_ascii=False)
+    blob = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
     # 静态报告不带删除能力（DELETE=null），删除按钮只在 server.py 服务时出现
     html = tpl.replace("__REPORT_DATA__", blob).replace("__DELETE_CONFIG__", "null")
 

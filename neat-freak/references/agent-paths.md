@@ -46,11 +46,11 @@
 
 发现 `TEAM_GUIDE.md`、`.agents.md` 等文件时，只有它们出现在 Codex fallback 配置中才把它们当指令文件。
 
-## 其他 Agent Skills 平台（Qoder、Kimi Code、iFlow、CodeBuddy、Cursor、Gemini CLI 等）
+## 其他 Agent Skills 平台（GitHub Copilot、Qoder、Kimi Code、iFlow、CodeBuddy、Cursor、Gemini CLI 等）
 
 Agent Skills 是开放标准（2025-12 由 Anthropic 开放），已有约 40 个产品兼容本 skill 的分发格式。Claude Code 和 Codex 之外的平台不逐一维护速查表，用通用探测法：
 
-1. **规则文件**：在项目根和上级目录找 `AGENTS.md`（跨平台事实标准）、`CLAUDE.md`，以及平台专属形态（如 `.cursor/rules/`、`.cursorrules`、平台设置里的项目指令）。哪份实际被加载，以当前平台文档和诊断入口为准，不猜。
+1. **规则文件**：GitHub Copilot 项目先检查 `.github/copilot-instructions.md` 和 `.github/instructions/`，仍以当前宿主实际加载链为准。在项目根和上级目录找 `AGENTS.md`（跨平台事实标准）、`CLAUDE.md`，以及平台专属形态（如 `.cursor/rules/`、`.cursorrules`、平台设置里的项目指令）。哪份实际被加载，以当前平台文档和诊断入口为准，不猜。
 2. **三分法归类**：把发现的每个知识文件归入三类之一——人工维护的规则、Agent 自动记忆、机器生成的历史/索引。归类不明时按机器生成处理（最保守）。
 3. **记忆边界**：未知平台的记忆机制找不到官方控制面时默认只读；不把任何其他平台的尺寸阈值或写入规则套过来。
 4. **降级用法**：宿主不支持 Agent Skills 时本 skill 仍可用——把 SKILL.md 全文作为规则文件或对话指令交给 Agent，references 内容按需跟进；执行边界不变。

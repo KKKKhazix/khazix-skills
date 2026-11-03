@@ -11,7 +11,7 @@
 | “已部署” | deploy marker/release 指向目标 commit + 服务 active |
 | “用户已看到新版本” | canonical 用户 URL/API 的真实响应，必要时同时比 origin/cache |
 | “可安全清场” | merged + production contains change + knowledge receipt + lane clean + 无唯一未集成文件 |
-| “已获准清场” | 完整结果已向用户汇报 + 用户在该汇报后明确确认可以清场 + 现场要求的确认凭证 |
+| “已获准清场” | 当前任务已有明确清理授权 + 对象仍在授权范围内 |
 | “整个项目干净” | 项目内所有适用事实面 verified；warning、pending 和 out-of-scope 单列 |
 
 代码直觉、旧 memory、commit message 和 cache-buster URL 都只能当线索，不能单独证明生产终态。
@@ -45,8 +45,7 @@ implemented
   -> deployed
   -> live verified
   -> knowledge closed + receipt recorded
-  -> full result reported while evidence is preserved
-  -> user explicitly approved cleanup after the report
+  -> existing cleanup authorization checked (ask only if missing)
   -> workspace cleaned
   -> post-cleanup audit passed
   -> cleanup result appended
@@ -68,19 +67,17 @@ implemented
 
 ## 清场前 gate
 
-清场会销毁复盘和用户复核证据，因此顺序固定为：
+清场前核实以下事实：
 
 1. 验证目标工作已集成并上线；
 2. 同步 docs/rules/获准记忆；
 3. 记录项目要求的 knowledge closeout receipt；
 4. 预览待删除 worktree/branch/db/artifact；
 5. 检查 dirty 文件和 patch equivalence；
-6. 向用户完整汇报结果并保留上述现场；
-7. 等待用户在看完汇报后明确确认可以清场；
-8. 记录项目要求的用户确认凭证并执行授权的清理；
-9. 重新运行 workspace audit，补充汇报清场结果。
+6. 核对当前任务的清理授权，已明确批准的不重复询问；
+7. 执行范围内的清理，保留尚有唯一内容或尚未授权的对象；
+8. 重新运行 workspace audit，汇报实际清理结果和待决项。
 
-用户最初任务中的“收尾并清理”“做完删掉”等预授权不替代第 7 步；确认必须发生在完整汇报之后，因为用户要先看到结果才能判断是否需要保留现场继续复核。
 
 目录名、分支年龄和 agent 会话是否关闭都不能证明可删除。
 

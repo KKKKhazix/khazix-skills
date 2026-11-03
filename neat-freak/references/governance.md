@@ -14,7 +14,7 @@
 | 安全红线 | “密钥不进代码”“ignore 必须含 X” | tracked files、ignore 规则、secret scanner |
 | 目录纪律 | “根目录不放裸文件” | 根目录 manifest 与白名单 |
 | 声明一致 | “启动命令/URL/服务名必须真实” | package/config、服务或 live probe |
-| 发布流程 | “完整汇报与用户确认先于清场” | knowledge receipt、deploy marker、cleanup candidate、post-report user approval receipt |
+| 发布流程 | “核实交付、唯一内容和已有授权后清场” | knowledge receipt、deploy marker、cleanup candidate、existing cleanup authorization |
 
 行为偏好如“结论先行”也要遵守，但不属于结构审计结果，除非存在可验证模板或门禁。
 

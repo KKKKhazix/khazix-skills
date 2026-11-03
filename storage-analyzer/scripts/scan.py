@@ -20,6 +20,7 @@ Output shape (same on both OSes):
 import json
 import os
 import shutil
+import stat
 import sys
 import time
 
@@ -155,27 +156,51 @@ def scan_macos():
 # ======================================================================
 # Windows  (UNTESTED on this build — stdlib only: os, shutil, ctypes)
 # ======================================================================
-def dir_size_bytes(path):
-    """Recursive size in bytes via os.scandir. Skips symlinks and unreadable."""
-    total = 0
-    try:
-        with os.scandir(path) as it:
-            for e in it:
-                try:
-                    if e.is_symlink():
-                        continue
-                    if e.is_file(follow_symlinks=False):
-                        total += e.stat(follow_symlinks=False).st_size
-                    elif e.is_dir(follow_symlinks=False):
-                        total += dir_size_bytes(e.path)
-                except (PermissionError, OSError):
-                    continue
-    except (PermissionError, OSError):
-        pass
-    return total
+def is_link(st):
+    return stat.S_ISLNK(st.st_mode) or getattr(st, "st_reparse_tag", 0) in (0xA0000003, 0xA000000C)
 
 
-def scandir_children(path, min_kb=51200, limit=40):
+def dir_size_bytes(path, sizes=None):
+    """Postorder traversal: no recursion, no junctions, reuse totals within one scan."""
+    if sizes is None:
+        sizes = {}
+    path = os.path.abspath(path)
+    stack = [(path, False)]
+    children = {}
+    while stack:
+        current, visited = stack.pop()
+        if current in sizes:
+            continue
+        if visited:
+            size, subdirs = children.pop(current)
+            sizes[current] = size + sum(sizes[p] for p in subdirs)
+            continue
+        size, subdirs = 0, []
+        try:
+            with os.scandir(current) as entries:
+                for entry in entries:
+                    try:
+                        st = entry.stat(follow_symlinks=False)
+                        if is_link(st):
+                            continue
+                        if stat.S_ISDIR(st.st_mode):
+                            subdirs.append(entry.path)
+                        elif stat.S_ISREG(st.st_mode):
+                            size += st.st_size
+                    except OSError as e:
+                        SCAN_ERRORS.add(str(e))
+        except OSError as e:
+            SCAN_ERRORS.add(str(e))
+        children[current] = (size, subdirs)
+        stack.append((current, True))
+        stack.extend((child, False) for child in subdirs if child not in sizes)
+    return sizes[path]
+
+
+SCAN_ERRORS = set()
+
+
+def scandir_children(path, min_kb=51200, limit=40, sizes=None):
     """Size every immediate child of `path` via os.scandir. Windows."""
     if not path or not os.path.isdir(path):
         return []
@@ -187,11 +212,11 @@ def scandir_children(path, min_kb=51200, limit=40):
                  "size_kb": 0, "size_h": "?", "denied": True}]
     for name in entries:
         child = os.path.join(path, name)
-        if os.path.islink(child):
-            continue
         try:
+            if is_link(os.lstat(child)):
+                continue
             kb = (os.path.getsize(child) if os.path.isfile(child)
-                  else dir_size_bytes(child)) // 1024
+                  else dir_size_bytes(child, sizes)) // 1024
         except (PermissionError, OSError):
             continue
         if kb < min_kb:
@@ -253,8 +278,9 @@ def scan_windows():
         ("program_files_x86", os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"), 102400),
     ]
     groups = {}
+    sizes = {}
     for key, path, floor in targets:
-        groups[key] = scandir_children(path, min_kb=floor)
+        groups[key] = scandir_children(path, min_kb=floor, sizes=sizes)
 
     dev_paths = [
         os.path.join(profile, ".cache"), os.path.join(profile, ".npm"),
@@ -269,7 +295,7 @@ def scan_windows():
         if not os.path.isdir(path):
             continue
         try:
-            kb = dir_size_bytes(path) // 1024
+            kb = dir_size_bytes(path, sizes) // 1024
         except (PermissionError, OSError):
             continue
         if kb < 51200:
@@ -283,6 +309,8 @@ def scan_windows():
 
 # ======================================================================
 def main():
+    sys.stdout.reconfigure(encoding="utf-8")
+    SCAN_ERRORS.clear()
     started = time.time()
     if sys.platform == "darwin":
         system, groups = scan_macos()
@@ -298,6 +326,7 @@ def main():
         "system": system,
         "groups": groups,
         "scan_seconds": round(time.time() - started, 1),
+        "warnings": sorted(SCAN_ERRORS),
     }
     print(json.dumps(data, ensure_ascii=False, indent=2))
 

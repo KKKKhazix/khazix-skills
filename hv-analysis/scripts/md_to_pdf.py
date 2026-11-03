@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 """
-横纵分析法报告 Markdown → PDF 转换脚本 (WeasyPrint版)
-用法: python md_to_pdf.py input.md output.pdf [--title "报告标题"] [--author "作者"]
+横纵分析法报告 Markdown → HTML / PDF 转换脚本
+用法: python md_to_pdf.py input.md output.html|output.pdf [--title "报告标题"] [--author "作者"]
 
-依赖: pip install weasyprint markdown --break-system-packages
+在 venv 中安装依赖：HTML 需要 markdown；PDF 另需 weasyprint 和系统 Pango。
 """
 
 import sys
 import os
 import re
 import argparse
+import html
+import json
+from pathlib import Path
 import markdown
 
 # ── CSS 样式 ──
@@ -19,8 +22,8 @@ CSS_TEMPLATE = """
     margin: 25mm 20mm 20mm 20mm;
 
     @top-center {
-        content: "HEADER_TEXT";
-        font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
+        content: HEADER_TEXT;
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "Droid Sans Fallback", Helvetica, Arial, sans-serif;
         font-size: 8pt;
         color: #95a5a6;
         border-bottom: 0.5pt solid #ecf0f1;
@@ -29,7 +32,7 @@ CSS_TEMPLATE = """
 
     @bottom-center {
         content: "第 " counter(page) " 页";
-        font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
+        font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "Droid Sans Fallback", Helvetica, Arial, sans-serif;
         font-size: 8pt;
         color: #95a5a6;
         border-top: 0.8pt solid #1a5276;
@@ -43,7 +46,7 @@ CSS_TEMPLATE = """
 }
 
 body {
-    font-family: "Droid Sans Fallback", Helvetica, Arial, sans-serif;
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "Droid Sans Fallback", Helvetica, Arial, sans-serif;
     font-size: 10.5pt;
     line-height: 1.75;
     color: #2c3e50;
@@ -54,7 +57,7 @@ body {
 .cover {
     page-break-after: always;
     text-align: center;
-    padding-top: 45%;
+    padding-top: 65mm;
 }
 .cover h1 {
     font-size: 28pt;
@@ -78,6 +81,12 @@ body {
     margin: 8mm auto;
     border: none;
     border-top: 1.5pt solid #1a5276;
+}
+
+@media screen {
+    body { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .cover { padding-top: 12vh; padding-bottom: 12vh; }
+    table { display: block; overflow-x: auto; }
 }
 
 /* 一级标题 */
@@ -215,13 +224,15 @@ def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深
     # 移除正文中的第一个 h1（会用在封面上）
     first_h1_match = re.search(r'<h1>(.*?)</h1>', html_body)
     if first_h1_match:
-        extracted_title = first_h1_match.group(1)
+        extracted_title = html.unescape(re.sub(r"<[^>]+>", "", first_h1_match.group(1)))
         if not title or title == "横纵分析报告":
             title = extracted_title
         html_body = html_body.replace(first_h1_match.group(0), '', 1)
 
     # 替换 CSS 中的页眉占位符
-    css = CSS_TEMPLATE.replace("HEADER_TEXT", f"{title}  |  横纵分析法深度研究报告")
+    css = CSS_TEMPLATE.replace("HEADER_TEXT", json.dumps(f"{title}  |  横纵分析法深度研究报告", ensure_ascii=False).replace("<", "\\3c "))
+
+    title, subtitle, meta_line, author = (html.escape(value) for value in (title, subtitle, meta_line, author))
 
     # 构建封面
     cover_html = f"""
@@ -238,6 +249,7 @@ def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>{css}</style>
 </head>
 <body>
@@ -250,9 +262,9 @@ def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深
 
 
 def main():
-    parser = argparse.ArgumentParser(description="横纵分析法报告 Markdown → PDF")
+    parser = argparse.ArgumentParser(description="横纵分析法报告 Markdown → HTML / PDF")
     parser.add_argument("input", help="输入的 Markdown 文件路径")
-    parser.add_argument("output", help="输出的 PDF 文件路径")
+    parser.add_argument("output", help="输出的 .html 或 .pdf 文件路径")
     parser.add_argument("--title", default=None, help="报告标题")
     parser.add_argument("--author", default="数字生命卡兹克", help="作者名")
     args = parser.parse_args()
@@ -271,14 +283,20 @@ def main():
     html = md_to_html(md_text, title=args.title or "横纵分析报告", meta_line=meta_line, author=args.author)
 
     # 保存中间 HTML（便于调试）
-    html_path = args.output.replace('.pdf', '.html')
+    output = Path(args.output)
+    if output.suffix.lower() not in (".pdf", ".html"):
+        parser.error("输出文件扩展名须为 .pdf 或 .html")
+    html_path = output.with_suffix('.html')
     with open(html_path, 'w', encoding='utf-8') as f:
         f.write(html)
     print(f"[OK] HTML 已生成: {html_path}")
 
+    if output.suffix.lower() == ".html":
+        return
+
     # 转 PDF
     from weasyprint import HTML
-    HTML(string=html).write_pdf(args.output)
+    HTML(string=html, base_url=str(Path(args.input).resolve().parent)).write_pdf(args.output)
     size_kb = os.path.getsize(args.output) / 1024
     print(f"[OK] PDF 已生成: {args.output} ({size_kb:.1f} KB)")
 
