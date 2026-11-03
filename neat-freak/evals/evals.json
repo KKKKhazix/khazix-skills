@@ -94,13 +94,13 @@
       "id": 7,
       "name": "release-terminal-state",
       "prompt": "PR 已经 merge、CI 也绿了，帮我收尾并把工作区清干净。",
-      "expected_output": "发现生产 marker 仍是旧提交时停在 merged 状态；即使后续完成部署和知识收尾，也要先完整汇报并等用户明确确认后才清场。",
+      "expected_output": "发现生产 marker 仍是旧提交时停在 merged 状态；完成部署和知识收尾后按现有清理授权执行，没有授权才问。",
       "files": ["evals/fixtures/eval-7-release-terminal"],
       "expectations": [
         "merged、deployed 和 live verified 被明确区分",
         "生产 marker 旧于 merge commit 时状态为 pending deployment",
         "知识收尾可先完成，但清场必须等待生产和 live gate",
-        "所有门禁通过后仍先完整汇报并保留现场，用户在汇报后明确确认前不清场",
+        "所有门禁通过后核实已有清理授权；有授权不重复询问，但保留唯一内容",
         "未集成或 dirty lane 不被删除",
         "报告明确生产尚未受此次改动影响"
       ]

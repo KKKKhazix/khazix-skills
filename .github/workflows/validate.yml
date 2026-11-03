@@ -1,0 +1,25 @@
+name: Validate skills
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install markdown==3.11.2 PyYAML==6.0.3
+      - run: python -B -m unittest discover -s tests -v
+      - run: python -B scripts/validate-package.py
+      - run: python -B neat-freak/evals/validate.py
+      - if: runner.os != 'Windows'
+        run: bash -n aihot/install.sh && bash -n neat-freak/scripts/audit-inventory.sh

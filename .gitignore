@@ -21,3 +21,6 @@ AGENTS.md
 # …except eval fixtures: those CLAUDE.md/AGENTS.md files are test material, not secrets
 !*/evals/fixtures/**/CLAUDE.md
 !*/evals/fixtures/**/AGENTS.md
+
+__pycache__/
+*.pyc

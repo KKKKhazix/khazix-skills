@@ -55,7 +55,7 @@ done
 
 section "other-agent-rule-artifacts"
 # Platform-specific rule forms at the project root (existence only).
-for rel in .cursorrules .windsurfrules .cursor/rules .qoder .trae .iflow; do
+for rel in .github/copilot-instructions.md .github/instructions .cursorrules .windsurfrules .cursor/rules .qoder .trae .iflow; do
   [[ -e "$PROJECT_ROOT/$rel" ]] && printf '%s\n' "$PROJECT_ROOT/$rel"
 done
 true

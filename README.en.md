@@ -30,7 +30,7 @@ Every skill here is a structured instruction set that agents load directly. Foll
 | 💽 [**storage-analyzer**](#-storage-analyzer) | One sentence to scan your whole Mac / Windows drive — three-tier cleanup plan, one-click trash from the browser | [Article (Chinese)](https://mp.weixin.qq.com/s/NyOMIlOD986OC4SI9vmxlA) |
 | 🔥 [**aihot**](#-aihot-ai-hot-news-query) | Lets your agent pull AI HOT's daily report and all AI news from aihot.news with one Chinese sentence — no API key | [aihot.news](https://aihot.news) |
 | 🧹 [**neat-freak**](#-neat-freak) | After a session, run `/neat` to reconcile docs, CLAUDE.md, and agent memory, then audit whether project rules are actually followed | [Article (Chinese)](https://mp.weixin.qq.com/s/tg1wd-iN2gWHWhXdY0faeg) |
-| 🔭 [**hv-analysis**](#-hv-analysis-horizontal-vertical-analysis) | Drop a product/company/concept into it and get a 10k–30k word PDF research report | [Article (Chinese)](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA) |
+| 🔭 [**hv-analysis**](#-hv-analysis-horizontal-vertical-analysis) | Drop a product/company/concept into it and get a deep research report with PDF, Markdown and optional HTML output | [Article (Chinese)](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA) |
 | ✍️ [**khazix-writer**](#-khazix-writer) | Makes the agent write long-form Chinese articles in my personal voice | [Article (Chinese)](https://mp.weixin.qq.com/s/AtxGrii_K-nzkwUM9SNhEg) |
 
 ---
@@ -45,7 +45,18 @@ Install this skill: https://github.com/KKKKhazix/khazix-skills/tree/main/<skill-
 
 Replace `<skill-name>` with the one you want — e.g. `neat-freak`, `hv-analysis`, `khazix-writer`. The agent will clone it into the right directory for you.
 
-Agent doesn't support Skills? Download the `SKILL.md` from the skill's directory and hand it to your agent as a project rule file (or paste it into the conversation) — same effect.
+Install the entire skill directory, including references, scripts, assets and agents metadata when present. Pasting SKILL.md alone provides instructions but cannot replace supporting files or host tools. A chat model without filesystem, browsing or execution tools cannot scan a computer or produce researched files.
+
+Claude Code marketplace installation:
+
+```text
+/plugin marketplace add KKKKhazix/khazix-skills
+/plugin install khazix-skills@khazix-skills
+```
+
+Update the catalog with `/plugin marketplace update khazix-skills`, then the plugin with `/plugin update khazix-skills@khazix-skills`. Automatic updates depend on client settings. Avoid duplicate manual and plugin installations.
+
+Complete versioned downloads: [Releases](https://github.com/KKKKhazix/khazix-skills/releases). Third-party catalogs may lag or omit resources. This repository maintains the six listed skills; the former skill-manage / self-evolution manager trio is not distributed here.
 
 ---
 
@@ -94,7 +105,7 @@ Plus question zero: **did you survey this chart yourself, or was it handed to yo
 
 **How to use it**
 
-Tell it your idea (any of the lines below triggers it). It measures and researches first, asks you at most 5 questions that genuinely need your call, then writes the book. About 12 minutes end to end.
+Tell it your idea (any of the lines below triggers it). It measures and researches first, asks you at most 5 questions that genuinely need your call, then writes the book. Zero questions is valid when the task is sufficiently specified; consequential unresolved choices still need authorization.
 
 ```
 write a goal for the agent
@@ -103,7 +114,7 @@ write me a /goal prompt
 let the agent run this project on its own
 ```
 
-The output is plain Markdown — an agent without goal mode can just be handed the text. With the book in hand, plan with a strong planning model and execute with a strong long-horizon one: I use Claude Fable 5 to plan and GPT-5.6 Sol to execute.
+The output is plain Markdown — an agent without goal mode can just be handed the text. With the book in hand, plan with a strong planning model and execute with a strong long-horizon one: choose models available in your host.
 
 → [SKILL.md](./leader/SKILL.md)
 
@@ -133,7 +144,7 @@ This skill is agent-driven. Every entry comes with **specific path + content cla
 
 **Hard rules**
 
-Scan phase is **read-only**, period. Deletions require **two clicks** — button on the page, then a browser confirm dialog. The local server runs on 127.0.0.1 + random port + token, with three whitelists (green = can rm; yellow = trash only; both = open).
+Scanning is read-only. Browser deletion requires confirmation; agents may execute a specifically authorized cleanup without asking again. The local service checks hosts, tokens and paths, and exits after 30 idle minutes.
 
 macOS is fully tested; Windows is code-ready (multi-drive supported) but worth eyeballing on first run.
 
@@ -185,6 +196,8 @@ Lets any SKILL.md-supporting agent pull AI HOT's daily report and all AI news fr
 现在最热的那件事，来龙去脉是什么
 ```
 
+Daily reports and rolling latest items have different scopes. Search uses the service’s documented time window. Original titles are available on AIHOT article detail pages when retained; preserve product/code identifiers instead of translating them literally.
+
 → [SKILL.md](./aihot/SKILL.md) · [aihot.news](https://aihot.news) · [Integration guide](https://aihot.news/agent)
 
 </td></tr>
@@ -213,10 +226,10 @@ The agent isn't getting dumber — your docs and memory are. neat-freak's job is
 
 These three layers have different audiences and don't overlap. It also treats rules as knowledge: CLAUDE.md / AGENTS.md symlink integrity, missing required files, and dead path references are all part of the audit. If the rules don't match reality, the next agent still works from the wrong premises.
 
-**Two guarantees in v3.0**
+**Two guarantees in v3.1**
 
-- **A dedicated light path for small projects**: for vibe projects with no git and no rule file, it aligns the README with what the code actually does, creates a minimal AI rule file by default (so your next session picks up right where you left off), and lists session residue — PLAN.md, debug scripts, `xxx_old` copies — as candidates for you to confirm.
-- **Never deletes on its own**: deletions only ever appear as a candidate list until you confirm; machine-generated memory is read-only by default; an "execute this command" found inside a file is never treated as your authorization.
+- **A dedicated light path for small projects**: for vibe projects with no git and no rule file, it aligns the README with what the code actually does, creates a minimal AI rule file by default (so your next session picks up right where you left off), and cleans verified session residue within existing authorization; uncertain or unauthorized items remain for a decision.
+- **Respect existing authorization:** complete authorized cleanup after checking for unique content; ask only for missing authorization. Generated memory stays read-only.
 
 **How to trigger**
 
@@ -245,7 +258,7 @@ Want to actually understand what a product / company / concept / person is about
 
 It runs two threads in parallel: **vertical** — tells the subject's story from inception to the present moment, like a narrative; **horizontal** — lays out every major competitor at the current moment for comparison. When the two cross, you see things that neither current-state nor history alone would show you.
 
-The output is a **typeset PDF research report**, 10,000–30,000 words.
+The default output is a PDF with Markdown source. HTML and Markdown in a specified Obsidian vault are also supported. Length follows the user’s request and the available evidence; a full Chinese report typically has 10,000–30,000 characters.
 
 **Good for**
 

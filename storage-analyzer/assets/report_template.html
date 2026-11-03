@@ -13,7 +13,7 @@
     --radius:14px; --shadow:0 1px 3px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.04);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,"SF Pro SC","PingFang SC",system-ui,sans-serif;
+  body{font-family:-apple-system,"SF Pro SC","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",system-ui,sans-serif;
     background:var(--bg);color:var(--ink);line-height:1.6;padding:32px 20px 80px;
     -webkit-font-smoothing:antialiased}
   .wrap{max-width:1040px;margin:0 auto}
@@ -155,6 +155,7 @@
 <script>
 const DATA = __REPORT_DATA__;
 const DELETE = __DELETE_CONFIG__; // null=静态只读报告；{token,endpoint}=server.py 提供一键删除
+document.querySelector('footer').textContent = DELETE ? 'storage-analyzer · 操作需确认 · 闲置 30 分钟服务退出' : 'storage-analyzer · 只读报告';
 const FM = (DATA.system && /win/i.test(DATA.system.os||'')) ? '资源管理器' : '访达'; // 文件管理器名，按系统
 
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -330,7 +331,7 @@ function delBlock(it){
       <button class="del-btn danger" onclick="doDelete(this,'rm')">直接删除</button>
       <span class="del-status"></span>
     </div>
-    <div class="del-note"><b>移到废纸篓</b>：可逆，删错能从${FM}废纸篓捞回，但要清空废纸篓才真正释放空间。<b>直接删除</b>：立即释放、不可恢复。绿灯都是可再生缓存，删了会自动重建。</div>
+    <div class="del-note"><b>移到废纸篓</b>：可逆，删错能从${FM}废纸篓捞回，但要清空废纸篓才真正释放空间。<b>直接删除</b>：不进入废纸篓、不可恢复。绿灯都是可再生缓存，删了会自动重建。</div>
   </div>`;
 }
 
@@ -348,12 +349,12 @@ function postAction(wrap, paths, mode){
 function doDelete(btn, mode){
   const wrap = btn.closest('.del-actions');
   const paths = JSON.parse(decodeURIComponent(escape(atob(wrap.dataset.paths))));
-  const verb = mode==='rm' ? '直接删除（不可恢复）' : '移到废纸篓（访达可恢复）';
+  const verb = mode==='rm' ? '直接删除（不可恢复）' : '移到废纸篓（回收站可恢复）';
   if(!confirm(`确认${verb}以下 ${paths.length} 个路径？\n\n`+paths.join('\n'))) return;
   postAction(wrap, paths, mode).then(res=>{
     const status = wrap.querySelector('.del-status');
     if(res.ok){
-      status.textContent = mode==='rm' ? '✓ 已删除，空间已释放' : '✓ 已移到废纸篓（访达可恢复，清空后释放空间）';
+      status.textContent = mode==='rm' ? '✓ 已删除（实际释放量以磁盘统计为准）' : '✓ 已移到废纸篓（回收站可恢复，清空后释放空间）';
       status.className='del-status ok';
       wrap.querySelectorAll('.del-btn.trash,.del-btn.danger').forEach(b=>b.remove());
       // 折叠状态下也能看到：标题行打上徽标 + 整行变灰

@@ -31,3 +31,7 @@ Windows 通常多个盘（C:、D:…）。磁盘总览会列出所有盘，但**
 ## 删除机制
 
 `server.py` 在 Windows 用 ctypes 调 `SHFileOperationW`(FOF_ALLOWUNDO) 送进回收站；纯标准库。🟢 项的 `trash_paths` 应在用户配置文件（`%USERPROFILE%`）目录内，便于白名单与 HOME 越界校验通过。
+
+## 联接目录与项目
+
+先用 `Get-Item -Force` 检查 LinkType、Target，junction 不计入实体大小；`.git` 文件也是 worktree 标识。项目和工具安装目录不能仅凭体积大、时间久就列入可清理项。UTF-8 输出在 PowerShell 用 `Out-File -Encoding utf8` 保存。

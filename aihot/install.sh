@@ -317,6 +317,9 @@ if [[ "$SHARED_TARGET" -eq 1 ]]; then
       skill_frontmatter_has_line "$legacy/SKILL.md" "name: aihot" || {
         fail "legacy path contains a different Skill and will not be touched: $legacy"
       }
+      if [[ "$MIGRATE_LEGACY" -eq 1 && "$legacy" == "$HOME/.claude/skills/aihot" ]]; then
+        CLAUDE_COMPAT_LINK="$legacy"
+      fi
       LEGACY_PATHS[$LEGACY_COUNT]="$legacy"
       LEGACY_COUNT=$((LEGACY_COUNT + 1))
     fi
