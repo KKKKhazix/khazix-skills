@@ -13,7 +13,7 @@ class InstallerTests(unittest.TestCase):
             legacy=home/'.claude/skills/aihot'; legacy.mkdir(parents=True)
             (legacy/'SKILL.md').write_bytes((ROOT/'aihot/SKILL.md').read_bytes())
             # Inject fixture roots into a copy, never change the caller's HOME/CODEX_HOME.
-            script=(ROOT/'aihot/install.sh').read_text().replace('$HOME','$TEST_INSTALL_HOME').replace('${CODEX_HOME:-','${TEST_CODEX_HOME:-')
+            script=(ROOT/'aihot/install.sh').read_text().replace('$HOME','$TEST_INSTALL_HOME').replace('${HOME:', '${TEST_INSTALL_HOME:').replace('${CODEX_HOME:-','${TEST_CODEX_HOME:-')
             installer=root/'install.sh'; installer.write_text(script)
             binpath=root/'bin'; binpath.mkdir()
             curl=binpath/'curl'; curl.write_text('''#!/usr/bin/env python3

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-横纵分析法报告 Markdown → PDF 转换脚本 (WeasyPrint版)
-用法: python md_to_pdf.py input.md output.pdf [--title "报告标题"] [--author "作者"]
+横纵分析法报告 Markdown → HTML / PDF 转换脚本
+用法: python md_to_pdf.py input.md output.html|output.pdf [--title "报告标题"] [--author "作者"]
 
-依赖: pip install weasyprint markdown --break-system-packages
+在 venv 中安装依赖：HTML 需要 markdown；PDF 另需 weasyprint 和系统 Pango。
 """
 
 import sys
@@ -262,9 +262,9 @@ def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深
 
 
 def main():
-    parser = argparse.ArgumentParser(description="横纵分析法报告 Markdown → PDF")
+    parser = argparse.ArgumentParser(description="横纵分析法报告 Markdown → HTML / PDF")
     parser.add_argument("input", help="输入的 Markdown 文件路径")
-    parser.add_argument("output", help="输出的 PDF 文件路径")
+    parser.add_argument("output", help="输出的 .html 或 .pdf 文件路径")
     parser.add_argument("--title", default=None, help="报告标题")
     parser.add_argument("--author", default="数字生命卡兹克", help="作者名")
     args = parser.parse_args()

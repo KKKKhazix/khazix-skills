@@ -68,6 +68,15 @@ class StorageTests(unittest.TestCase):
     def test_cache_deletion(self):
         self.assertEqual(self.delete([self.cache])[0],200)
         self.assertFalse(self.cache.exists())
+    def test_single_file_deletion(self):
+        target=self.cache/'file'
+        server.RM_ALLOW.add(str(target))
+        self.assertEqual(self.delete([target])[0],200)
+        self.assertFalse(target.exists())
+    def test_already_gone_target_succeeds(self):
+        target=self.cache/'already-gone'
+        server.RM_ALLOW.add(str(target))
+        self.assertEqual(self.delete([target])[0],200)
     def test_readonly_cache_deletion(self):
         sub=self.cache/'module'; sub.mkdir(); f=sub/'file'; f.write_text('cache')
         f.chmod(stat.S_IREAD); sub.chmod(stat.S_IREAD|stat.S_IEXEC)

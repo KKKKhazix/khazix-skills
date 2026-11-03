@@ -2,17 +2,17 @@
 """Serve the storage report with a guarded one-click delete API (macOS + Windows).
 
 Starts on 127.0.0.1 + a random port + a random per-session token, serves the
-interactive report, and exposes POST /action to move green-tier paths to Trash
-or delete them outright. Stop with Ctrl+C.
+interactive report, and exposes POST /action for the report's permitted actions.
+Stop with Ctrl+C; the server also exits after 30 minutes of inactivity.
 
 Usage:
     server.py <analysis.json>
 
 SAFETY MODEL — read before changing:
-- Allowlist: only paths listed in this report's green items `trash_paths` are
-  accepted. Every request path is realpath-resolved and must be in the allowlist
-  AND under $HOME. Anything else is rejected. This is the core guard — the
-  endpoint cannot be used to delete arbitrary files.
+- Allowlists: green `trash_paths` permit deletion or Trash; yellow `trash_paths`
+  permit Trash only. Deletion targets must be inside HOME and cannot be protected
+  data roots, links, Git workspaces, or their parent/child directories. Opening
+  report-listed apps additionally permits the platform application directories.
 - Bound to 127.0.0.1 only; every POST requires the session token; Host header
   must be 127.0.0.1 (blocks DNS-rebinding from a malicious page).
 - Two modes: "trash" (Finder -> Trash, reversible) and "rm" (immediate,
@@ -158,10 +158,11 @@ def validate_path(path, mode, allow):
             raise ValueError("项目或工作区请使用项目自身的清理流程：" + path)
         def fail(error):
             raise error
-        for base, dirs, files in os.walk(rp, followlinks=False, onerror=fail):
-            if ".git" in dirs or ".git" in files:
-                raise ValueError("目录包含项目或工作区：" + path)
-            dirs[:] = [d for d in dirs if not is_link(os.path.join(base, d))]
+        if os.path.isdir(rp):
+            for base, dirs, files in os.walk(rp, followlinks=False, onerror=fail):
+                if ".git" in dirs or ".git" in files:
+                    raise ValueError("目录包含项目或工作区：" + path)
+                dirs[:] = [d for d in dirs if not is_link(os.path.join(base, d))]
     return rp
 
 
