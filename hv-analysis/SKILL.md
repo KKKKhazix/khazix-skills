@@ -21,7 +21,7 @@ description: |
 
 ### 环境准备
 
-1. **确认安装完整**：需要本目录的 `scripts/md_to_pdf.py` 和 `references/`，第三方市场可能只分发提示词；缺文件时从官方仓库安装完整目录，不能假装 PDF 已生成。优先使用已有 Python 环境；需要安装依赖时在工作目录创建 venv，使用其中的 Python。**按输出格式检查依赖**：本Skill自带 `scripts/md_to_pdf.py`（基于WeasyPrint），用于将最终Markdown报告转为排版精美的PDF。HTML 只需 `markdown`；PDF 才需要 `weasyprint` 和系统 Pango。安装说明见 https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation，不使用 `--break-system-packages`。
+1. **确认安装完整**：需要本目录的 `scripts/md_to_pdf.py` 和 `references/`，第三方市场可能只分发提示词；缺文件时从官方仓库安装完整目录，不能假装 PDF 已生成。优先使用已有 Python 环境；需要安装依赖时，在用户缓存目录创建或复用 venv（macOS/Linux：`~/.cache/khazix-skills/hv-analysis`；Windows：`LocalApplicationData` 下的 `khazix-skills/hv-analysis`），使用该环境的 Python，项目目录只保存稿件和报告。**按输出格式检查依赖**：本Skill自带 `scripts/md_to_pdf.py`（基于WeasyPrint），用于将最终Markdown报告转为排版精美的PDF。HTML 只需 `markdown`；PDF 才需要 `weasyprint` 和系统 Pango。安装说明见 https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#installation，不使用 `--break-system-packages`。
 2. **写作风格**：本Skill已内置完整的写作风格指南（见下文"写作风格"部分），无需额外加载其他skill。
 
 ### 明确研究对象
@@ -202,11 +202,13 @@ PDF 或 HTML 使用同一个 `scripts/md_to_pdf.py` 转换；Markdown 直接交�
 ### 转换流程
 
 1. **先完成Markdown稿件**：将完整报告写为标准Markdown格式，保存为 `[研究对象]_横纵分析报告.md`
-2. **安装缺少的依赖**：HTML 使用 `python -m pip install markdown`；PDF 再安装 `weasyprint` 及官方要求的系统库。Markdown 交付无需转换依赖。
-3. **运行转换脚本**：
+2. **解析实际路径**：从当前加载的 Skill 位置取得绝对目录 `HV_SKILL_DIR`，把所选环境的 Python 绝对路径设为 `HV_PYTHON`；路径包含空格时也必须可用。
+3. **安装缺少的依赖并转换**：HTML 只安装 `markdown`；PDF 再安装 `weasyprint` 及官方要求的系统库。Markdown 交付无需转换依赖。下面的 shell 示例使用已解析的路径，作者按用户要求填写；HTML 输出把扩展名改为 `.html`。
    ```bash
-   python [skill目录]/scripts/md_to_pdf.py input.md output.pdf --title "研究对象名称" --author "数字生命卡兹克"
+   "$HV_PYTHON" -m pip install markdown
+   "$HV_PYTHON" "$HV_SKILL_DIR/scripts/md_to_pdf.py" input.md output.pdf --title "研究对象名称" --author "报告作者"
    ```
+   PowerShell 调用路径变量时使用 `& $HV_PYTHON "$HV_SKILL_DIR/scripts/md_to_pdf.py" ...`。
 4. PDF 模式生成 HTML 和 PDF；HTML 模式只生成 HTML。打开实际产物核对标题、中文、表格和分页。
 
 ### 脚本内置的排版规范

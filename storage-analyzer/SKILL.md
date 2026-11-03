@@ -29,8 +29,10 @@ description: >
 
 ### Step 1 扫描（只读）
 
+从宿主当前加载的 Skill 位置取得实际绝对目录并设为 `STORAGE_SKILL_DIR`；每个新 shell 都要重新赋值。输出写入当前任务的工作目录，脚本使用带引号的绝对路径：
+
 ```bash
-python3 scripts/scan.py > storage_scan.json
+python3 "$STORAGE_SKILL_DIR/scripts/scan.py" > storage_scan.json
 ```
 
 `scan.py` 自动识别系统（`sys.platform`）：
@@ -39,7 +41,7 @@ python3 scripts/scan.py > storage_scan.json
 
 输出 JSON：`system`（系统/磁盘信息，含 `disk_name` 主盘名 + `disks` 全部盘）+ `groups`（各组子目录大小，已降序、过滤 50MB 以下）。Windows 同次扫描复用子目录统计，避免重复遍历。顶层分组存在父子包含关系，不能直接相加；可释放空间还受硬链接、压缩和回收站保留影响。读取 `warnings` 并在报告中说明未读全的路径。读不到的目录标 `denied`，需在报告里列出并提示遗漏体量。
 
-Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 scripts/scan.py | Out-File -Encoding utf8 storage_scan.json`，后续 JSON 读取支持 UTF-8 BOM。命令在 Skill 目录执行，或改为脚本绝对路径。
+Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 "$STORAGE_SKILL_DIR/scripts/scan.py" | Out-File -Encoding utf8 storage_scan.json`，后续 JSON 读取支持 UTF-8 BOM。PowerShell 同样先设置 `$STORAGE_SKILL_DIR` 为实际绝对目录。
 
 ### Step 2 分析与分级
 
@@ -66,13 +68,13 @@ Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 scripts/scan.py 
 
 **默认用一键删除模式（`server.py`）打开报告**，因为这个 skill 的核心价值就是网页上能直接清理：
 ```bash
-python3 scripts/server.py storage_analysis.json   # 自动开浏览器，Ctrl+C 停，闲置 30 分钟自动退出
+python3 "$STORAGE_SKILL_DIR/scripts/server.py" storage_analysis.json   # 自动开浏览器，Ctrl+C 停，闲置 30 分钟自动退出
 ```
-`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(立即释放、不可逆)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。删除请求校验整个批次，限制在用户目录内，拒绝主目录、数据根目录、链接和项目/worktree；应用安装目录仅允许打开。所有请求 Host 校验，操作请求还校验 token，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
+`server.py` 起在 127.0.0.1 + 随机端口 + 随机 token。🟢 项给「移到废纸篓」(可逆) +「直接删除」(不可逆，实际释放量以磁盘统计为准)；🟡 项给「在访达打开」+（有安全子路径时）「移到废纸篓」。**安全模型——三套白名单，权限从严到宽**：`rm` 只允许绿灯 `trash_paths`；`trash` 允许绿灯+橙灯 `trash_paths`（橙灯永远不能 rm）；`open`（在文件管理器打开，非破坏性）允许上述全部 + 橙灯真实 `path`。删除请求校验整个批次，限制在用户目录内，拒绝主目录、数据根目录、链接和项目/worktree；应用安装目录仅允许打开。所有请求 Host 校验，操作请求还校验 token，每次点击浏览器先 confirm。osascript/SHFileOperationW 入废纸篓，macOS 首次弹访达自动化授权点允许即可。
 
 仅当用户明确只想要一份可分享/留存的只读文件时，才用静态模式（无删除按钮，因为 `file://` 打开的页面碰不到文件系统）：
 ```bash
-python3 scripts/build_report.py storage_analysis.json storage-report.html
+python3 "$STORAGE_SKILL_DIR/scripts/build_report.py" storage_analysis.json storage-report.html
 ```
 
 **排障：网页上没有删除/移废纸篓按钮** = 要么开的是静态报告（改用 `server.py`），要么 🟢 项漏了 `trash_paths`（补上重启服务）。

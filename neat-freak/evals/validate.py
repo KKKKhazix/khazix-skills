@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import stat
 from pathlib import Path
@@ -63,7 +64,8 @@ def main() -> None:
 
     inventory = ROOT / "scripts/audit-inventory.sh"
     assert inventory.is_file(), "read-only inventory script is missing"
-    assert inventory.stat().st_mode & stat.S_IXUSR, "inventory script is not executable"
+    if os.name != "nt":
+        assert inventory.stat().st_mode & stat.S_IXUSR, "inventory script is not executable"
     inventory_text = inventory.read_text(encoding="utf-8")
     assert "Read-only inventory" in inventory_text
     for forbidden in (" rm ", "mv ", "git clean", "git reset", "systemctl"):
