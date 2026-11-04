@@ -1,7 +1,7 @@
 ---
 name: storage-analyzer
 description: >
-  macOS / Windows 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出
+  macOS / Windows / Linux（Ubuntu GNOME 实测）只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出
   占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出
   可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可
   起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景
@@ -16,7 +16,7 @@ description: >
 
 # Storage Analyzer
 
-对 macOS / Windows 做一次只读存储分析，产出交互式 HTML 报告。流程：扫描 → 分析分级 → 生成网页 → 打开。
+对 macOS / Windows / Linux 做一次只读存储分析，产出交互式 HTML 报告。流程：扫描 → 分析分级 → 生成网页 → 打开。
 
 ## 铁律
 
@@ -38,6 +38,7 @@ python3 "$STORAGE_SKILL_DIR/scripts/scan.py" > storage_scan.json
 `scan.py` 自动识别系统（`sys.platform`）：
 - **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du` 算大小。
 - **Windows**：扫 user_profile、appdata_local、appdata_roaming、temp、downloads、program_files(_x86)、dev_caches，用 `os.scandir` 算大小；`system.disks` 含所有盘符。
+- **Linux**：扫 home、`.cache`、`.local/share`、downloads、`/var`、`/tmp`、dev_caches（pip/uv/cargo/npm/go/docker/snap 等），用 `du` 算大小；`system.disks` 来自 `df`（GNU df，解析失败时降级为根分区单盘信息）。
 
 输出 JSON：`system`（系统/磁盘信息，含 `disk_name` 主盘名 + `disks` 全部盘）+ `groups`（各组子目录大小，已降序、过滤 50MB 以下）。Windows 同次扫描复用子目录统计，避免重复遍历。顶层分组存在父子包含关系，不能直接相加；可释放空间还受硬链接、压缩和回收站保留影响。读取 `warnings` 并在报告中说明未读全的路径。读不到的目录标 `denied`，需在报告里列出并提示遗漏体量。
 
@@ -45,7 +46,7 @@ Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 "$STORAGE_SKILL_
 
 ### Step 2 分析与分级
 
-先看 `system.os` 判断系统，读对应的数据布局参考：macOS 读 [references/macos.md](references/macos.md)，Windows 读 [references/windows.md](references/windows.md)（讲该系统东西存哪、怎么辨认、归哪一级）。然后读 `storage_scan.json` 做这几件事：
+先看 `system.os` 判断系统，读对应的数据布局参考：macOS 读 [references/macos.md](references/macos.md)，Windows 读 [references/windows.md](references/windows.md)，Linux 读 [references/linux.md](references/linux.md)（讲该系统东西存哪、怎么辨认、归哪一级）。然后读 `storage_scan.json` 做这几件事：
 
 1. **挑 Top 5** 占用大户，判定类型（系统资产/应用本体/应用数据/应用缓存/开发缓存/用户文件/媒体内容/下载内容/虚拟机镜像/回收站/其他）。
 2. **识别"神秘大目录"**：UUID 命名的 Container、不明的隐藏目录，要追查它属于哪个 App、装的是什么（例如某 97GB 的 UUID Container 实为 Bilibili 离线视频缓存）。必要时 `ls`/`du` 深入一层看清楚，但仍只读。
@@ -65,6 +66,8 @@ Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 "$STORAGE_SKILL_
 把分析结果以 UTF-8 写成 analysis JSON（schema 见 `scripts/build_report.py` 顶部注释）。Windows PowerShell 不用默认 ANSI 写文件，用 `Set-Content -Encoding utf8` 或 Python 的 `encoding="utf-8"`；已有中文变成问号的 JSON 必须从原内容重生成，换字体无法恢复丢失字符。
 
 **🟢 项必须带 `trash_paths`**（具体可删的绝对路径数组，区别于人类可读的 `path` 展示字段）——这是网页删除按钮的前提，漏了按钮就不出现。
+
+**符号链接指向的目录必须加 `clear_contents: true`**：若清理目标被其他路径以符号链接引用（如 `~/.cache` → `~/.dev-cache/cache`、`~/.npm` → `~/.dev-cache/npm`），给该项加 `"clear_contents": true`——服务端只清空目录内容、保留目录本身，链接不会悬空；配套命令也写**内容级**（`find <dir> -mindepth 1 -maxdepth 1 -exec gio trash {} +` 或 `find <dir> -mindepth 1 -delete`），不要给整目录 `gio trash` / `rm -rf <dir>`。判断方法：`ls -ld <路径>` 看是否为 symlink，或 `realpath <路径>` 与展示路径是否不一致。
 
 **默认用一键删除模式（`server.py`）打开报告**，因为这个 skill 的核心价值就是网页上能直接清理：
 ```bash
@@ -98,15 +101,18 @@ pills 只渲染解析出的纯数字（如"约 5.5 GB"），不显示数据里�
 - 全部脚本是 **Python 3 标准库**，零第三方依赖（不用 pip install）。
 - **macOS** 需要 Python 3；先检查 `python3 --version`。`du`、`diskutil`、`osascript` 由系统提供。
 - **Windows** 默认没装 Python——需先装 Python 3，且命令多为 `python` 或 `py -3`（不是 `python3`）。本 skill 命令示例写的是 `python3`，在 Windows 上自动改用 `python` / `py -3`。
+- **Linux** 自带 python3、`du`；扫描用 GNU `df`（BusyBox/Alpine 不支持 `-B1`/`-x` 时自动降级为单盘信息）；移废纸篓需 `gio`（GNOME 自带）或 `trash-cli`，打开文件夹需 `xdg-open`。
 - 本 skill 是 **agent 驱动**：扫描出数据后由 agent（Claude）做分级分析，不是双击即用的独立 App。
 
 ## 平台状态
 
 - **macOS**：完整实现并实测（扫描 / 报告 / 一键删除全验证过）。
 - **Windows**：代码已写（`scan.py` 的 `scan_windows`、`server.py` 的 `_trash_windows` 走 `SHFileOperationW`），包含社区 Windows 真机反馈对应的修复；自动化验证见仓库 CI，回收站桌面交互仍需按当前机器核实。首次在 Windows 跑要核对：目标目录路径、`os.scandir` 大小、回收站删除是否正常。多盘符已支持（主盘分段条 + 其他盘列表）。
+- **Linux**：适配新增（`scan_linux` + `gio trash` / `xdg-open`）。**仅在 Ubuntu 26.04.1 LTS + GNOME + ZFS 单机实测**（扫描 / 报告 / 服务模式 / `POST → gio trash → 回收站` 链路验证过）；依赖 GNU coreutils、GIO 或 trash-cli、xdg-open。扫描目标含 Debian 系路径（`~/snap` 等，无 snap 的发行版自动跳过）；`references/linux.md` 的清理示例已标注 Debian/Ubuntu 与 Fedora/Arch 的写法差异；KDE/XFCE、无桌面、Fedora/Arch/Alpine、非 ZFS 文件系统均未测。
 
 ## 长期优化建议素材（写进报告 summary.long_term）
 
 - 定期清理：`brew cleanup`、Xcode DerivedData、浏览器缓存
 - 可视化工具：DaisyDisk、GrandPerspective、OmniDiskSweeper
 - 大文件归档到外置盘 / iCloud / NAS；macOS「系统设置 > 通用 > 储存空间」的优化选项
+- Linux：`sudo apt autoremove && sudo apt clean`（Fedora：`dnf clean all`；Arch：`pacman -Sc`）、`journalctl --vacuum-size=200M`、清 snap 旧版本、清 `~/.cache`

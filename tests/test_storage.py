@@ -68,6 +68,17 @@ class StorageTests(unittest.TestCase):
     def test_cache_deletion(self):
         self.assertEqual(self.delete([self.cache])[0],200)
         self.assertFalse(self.cache.exists())
+    def test_clear_contents_keeps_directory(self):
+        (self.cache / 'sub').mkdir(); (self.cache / 'sub' / 'f').write_text('x')
+        (self.cache / '.hidden').write_text('h')
+        data = {'system': {'os': 'test'},
+                'green': [{'trash_paths': [str(self.cache)], 'clear_contents': True}]}
+        source = self.home / 'clear.json'
+        source.write_text(json.dumps(data))
+        server.DATA, server.TPL, server.RM_ALLOW, server.TRASH_ALLOW, server.OPEN_ALLOW = server.load(source)
+        self.assertEqual(self.delete([self.cache])[0], 200)
+        self.assertTrue(self.cache.exists())
+        self.assertEqual(list(self.cache.iterdir()), [])
     def test_single_file_deletion(self):
         target=self.cache/'file'
         server.RM_ALLOW.add(str(target))
