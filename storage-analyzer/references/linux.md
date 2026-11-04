@@ -44,4 +44,6 @@
 
 ## 删除机制
 
-`server.py` 在 Linux 用 `gio trash`（GIO/GLib，GNOME 自带、KDE 通常也装了，入 `~/.local/share/Trash`，可恢复）；无 gio 时回退 `trash`（trash-cli，最小环境可 `apt install trash-cli` 后使用）；两者都没有则该按钮报错（「直接删除」不受影响）。打开文件夹用 `xdg-open`（freedesktop 标准，各桌面发行版通用）。
+`server.py` 在 Linux 用 `gio trash`（GIO/GLib，GNOME 自带、KDE 通常也装了，入 `~/.local/share/Trash`，可恢复；目标与 Trash 不同文件系统时落在 `$topdir/.Trash-$uid`）；无 gio 时回退 `trash`（trash-cli，最小环境可 `apt install trash-cli` 后使用）；两者都没有则该按钮报错（「直接删除」不受影响）。打开文件夹用 `xdg-open`（freedesktop 标准，各桌面发行版通用）。
+
+**符号链接布局**：不少发行版/用户把 `~/.cache`、`~/.cargo`、`~/.npm`、`~/.rustup` 等做成指向集中缓存目录（如 `~/.dev-cache/*`）的符号链接。清理这类目标时给卡片加 `clear_contents: true`（只清内容、保留目录），否则整目录删除会让链接悬空。

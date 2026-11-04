@@ -67,6 +67,8 @@ Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 "$STORAGE_SKILL_
 
 **🟢 项必须带 `trash_paths`**（具体可删的绝对路径数组，区别于人类可读的 `path` 展示字段）——这是网页删除按钮的前提，漏了按钮就不出现。
 
+**符号链接指向的目录必须加 `clear_contents: true`**：若清理目标被其他路径以符号链接引用（如 `~/.cache` → `~/.dev-cache/cache`、`~/.npm` → `~/.dev-cache/npm`），给该项加 `"clear_contents": true`——服务端只清空目录内容、保留目录本身，链接不会悬空；配套命令也写**内容级**（`find <dir> -mindepth 1 -maxdepth 1 -exec gio trash {} +` 或 `find <dir> -mindepth 1 -delete`），不要给整目录 `gio trash` / `rm -rf <dir>`。判断方法：`ls -ld <路径>` 看是否为 symlink，或 `realpath <路径>` 与展示路径是否不一致。
+
 **默认用一键删除模式（`server.py`）打开报告**，因为这个 skill 的核心价值就是网页上能直接清理：
 ```bash
 python3 "$STORAGE_SKILL_DIR/scripts/server.py" storage_analysis.json   # 自动开浏览器，Ctrl+C 停，闲置 30 分钟自动退出
