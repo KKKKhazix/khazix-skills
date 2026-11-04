@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the storage report with a guarded one-click delete API (macOS + Windows).
+"""Serve the storage report with a guarded one-click delete API (macOS + Windows + Linux).
 
 Starts on 127.0.0.1 + a random port + a random per-session token, serves the
 interactive report, and exposes POST /action for the report's permitted actions.
@@ -15,7 +15,7 @@ SAFETY MODEL — read before changing:
   report-listed apps additionally permits the platform application directories.
 - Bound to 127.0.0.1 only; every POST requires the session token; Host header
   must be 127.0.0.1 (blocks DNS-rebinding from a malicious page).
-- Two modes: "trash" (Finder -> Trash, reversible) and "rm" (immediate,
+- Two modes: "trash" (Finder / gio -> Trash, reversible) and "rm" (immediate,
   irreversible). The browser confirms each action before sending.
 """
 import json
@@ -83,8 +83,10 @@ def move_to_trash(path):
         _trash_macos(path)
     elif sys.platform.startswith("win"):
         _trash_windows(path)
+    elif sys.platform.startswith("linux"):
+        _trash_linux(path)
     else:
-        raise OSError("移到废纸篓仅支持 macOS / Windows")
+        raise OSError("移到废纸篓仅支持 macOS / Windows / Linux")
 
 
 def _trash_macos(path):
@@ -129,6 +131,24 @@ def _trash_windows(path):
         raise OSError("回收站操作已取消，未完成")
     if rc != 0 and not (rc == 2 and not os.path.exists(path)):
         raise OSError("SHFileOperation failed (code %d)" % rc)
+
+
+def _trash_linux(path):
+    # gio trash -> XDG trash (~/.local/share/Trash), recoverable. Needs GIO
+    # (GNOME and most desktops ship it); falls back to trash-cli's `trash`.
+    if shutil.which("gio"):
+        r = subprocess.run(["gio", "trash", path], capture_output=True, text=True)
+        if r.returncode == 0:
+            return
+        err = (r.stderr or r.stdout or "").strip()
+    elif shutil.which("trash"):
+        r = subprocess.run(["trash", path], capture_output=True, text=True)
+        if r.returncode == 0:
+            return
+        err = (r.stderr or "").strip()
+    else:
+        err = "未找到 gio 或 trash 命令"
+    raise OSError(err or "gio trash 失败")
 
 
 def is_link(path):
@@ -208,8 +228,12 @@ def open_in_file_manager(path):
                 raise OSError((r.stderr or r2.stderr or "open 失败").strip())
     elif sys.platform.startswith("win"):
         subprocess.run(["explorer", target])  # explorer 退出码不可靠，不据此判成败
+    elif sys.platform.startswith("linux"):
+        r = subprocess.run(["xdg-open", target], capture_output=True, text=True)
+        if r.returncode != 0:
+            raise OSError((r.stderr or "xdg-open 失败").strip())
     else:
-        raise OSError("打开文件夹仅支持 macOS / Windows")
+        raise OSError("打开文件夹仅支持 macOS / Windows / Linux")
 
 
 class Handler(BaseHTTPRequestHandler):
