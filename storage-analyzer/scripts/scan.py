@@ -57,6 +57,7 @@ def du_children(path, min_kb=51200, limit=40):
     results = []
     try:
         entries = sorted(os.listdir(path))
+        parent_dev = os.stat(path).st_dev
     except PermissionError:
         return [{"name": "(permission denied)", "path": path,
                  "size_kb": 0, "size_h": "?", "denied": True}]
@@ -66,7 +67,16 @@ def du_children(path, min_kb=51200, limit=40):
         child = os.path.join(path, name)
         if os.path.islink(child):
             continue
-        out = run(["du", "-sk", child], timeout=120)
+        try:
+            if os.lstat(child).st_dev != parent_dev:
+                # A mount point (e.g. Xcode's FSKit CoreDevice/DeviceFS): its
+                # contents live on another volume, not on this disk.
+                SCAN_ERRORS.add("已跳过挂载点（属于另一个卷，不占本盘空间）：" + child)
+                continue
+        except OSError:
+            continue
+        # -x: stay on this volume, so mounts nested deeper are not counted.
+        out = run(["du", "-skx", child], timeout=120)
         m = re.match(r"\s*(\d+)", out)
         if not m:
             continue
@@ -105,7 +115,13 @@ def dev_caches_macos():
         path = os.path.expanduser(p)
         if not os.path.isdir(path):
             continue
-        out = run(["du", "-sk", path], timeout=180)
+        try:
+            if os.stat(path).st_dev != os.stat(os.path.dirname(path.rstrip("/"))).st_dev:
+                SCAN_ERRORS.add("已跳过挂载点（属于另一个卷，不占本盘空间）：" + path)
+                continue
+        except OSError:
+            continue
+        out = run(["du", "-skx", path], timeout=180)
         m = re.match(r"\s*(\d+)", out)
         if not m:
             continue

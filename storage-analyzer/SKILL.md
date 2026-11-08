@@ -36,7 +36,7 @@ python3 "$STORAGE_SKILL_DIR/scripts/scan.py" > storage_scan.json
 ```
 
 `scan.py` 自动识别系统（`sys.platform`）：
-- **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du` 算大小。
+- **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du -x` 算大小（不跨卷）。挂载点会被跳过并写进 `warnings`，例如 Xcode 的 `~/Library/Developer/CoreDevice/DeviceFS`：它是模拟器/设备文件系统的虚拟挂载，显示几十 GB 但不占本盘空间，不要当成清理项。二次深入查看时同样用 `du -x`。
 - **Windows**：扫 user_profile、appdata_local、appdata_roaming、temp、downloads、program_files(_x86)、dev_caches，用 `os.scandir` 算大小；`system.disks` 含所有盘符。
 - **Linux**：扫 home、`.cache`、`.local/share`、downloads、`/var`、`/tmp`、dev_caches（pip/uv/cargo/npm/go/docker/snap 等），用 `du` 算大小；`system.disks` 来自 `df`（GNU df，解析失败时降级为根分区单盘信息）。
 
