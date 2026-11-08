@@ -18,10 +18,10 @@ for entry in skills:
     assert all(isinstance(v, str) for v in (meta.get('metadata') or {}).values()), entry
     for link in re.findall(r'\]\(((?:references|scripts|assets)/[^)#]+)', content):
         assert (entry.parent / link).is_file(), (entry, link)
-for line in (ROOT / 'aihot/manifest.sha256').read_text().splitlines():
+for line in (ROOT / 'aihot/manifest.sha256').read_text(encoding='utf-8').splitlines():
     checksum, name = line.split()
     assert hashlib.sha256((ROOT / 'aihot' / name).read_bytes()).hexdigest() == checksum, name
-plugin = json.loads((ROOT / '.claude-plugin/marketplace.json').read_text())['plugins'][0]
+plugin = json.loads((ROOT / '.claude-plugin/marketplace.json').read_text(encoding='utf-8'))['plugins'][0]
 assert plugin['source'] == './'
 assert {Path(p).name for p in plugin['skills']} == {p.parent.name for p in skills}
 for path in ROOT.glob('*/references/*.json'):
