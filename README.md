@@ -27,7 +27,7 @@
 | 名字 | 一句话 | 讲解 |
 |---|---|---|
 | 🧭 [**leader（领导）**](#-leader领导) | 帮你把一句模糊的想法定义成一个清晰的**目标**，让 AI 拿着自己跑几个小时到完成 | — |
-| 💽 [**storage-analyzer（清理垃圾）**](#-storage-analyzer清理垃圾) | 一句话扫描 Mac / Windows 整机磁盘，三色分级给清理决策，网页上一键移废纸篓 | [公众号文章](https://mp.weixin.qq.com/s/NyOMIlOD986OC4SI9vmxlA) |
+| 💽 [**storage-analyzer（清理垃圾）**](#-storage-analyzer清理垃圾) | 一句话扫描 Mac / Windows / Linux 整机磁盘，三色分级给清理决策，网页上一键移废纸篓 | [公众号文章](https://mp.weixin.qq.com/s/NyOMIlOD986OC4SI9vmxlA) |
 | 🔥 [**aihot（AI HOT 资讯查询）**](#-aihotai-hot-资讯查询) | 让 Agent 用一句话拿到 aihot.news 每天的 AI HOT 日报和全部 AI 动态，无需 API Key | [aihot.news](https://aihot.news) |
 | 🧹 [**neat-freak（洁癖）**](#-neat-freak洁癖) | 干完活跑一下 `/neat`，自动对齐项目文档、CLAUDE.md、Agent 记忆，并审计规则有没有被执行 | [公众号文章](https://mp.weixin.qq.com/s/tg1wd-iN2gWHWhXdY0faeg) |
 | 🔭 [**hv-analysis（横纵分析法）**](#-hv-analysis横纵分析法) | 想搞懂一个产品/公司/概念是怎么回事，丢给它，给你一份万字 PDF 研究报告 | [公众号文章](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA) |
@@ -148,7 +148,7 @@ CleanMyMac 是个写死规则的软件，扫到一个 3.8G 的 Chrome 文件夹�
 
 全程只读扫描，绝不擅自动手。网页删除逐次确认；用户已明确授权具体清理对象时，Agent 也可代为执行，无需重复确认。本地服务跑在 127.0.0.1 + 随机端口 + token，安全模型上三套白名单分级（绿灯能删、橙灯只能移废纸篓、红灯只能打开）。
 
-支持 macOS / Windows。扫描、删除边界和只读缓存修复由跨平台 CI 验证；回收站桌面交互需在当前系统核实。服务连续 30 分钟无请求自动退出。
+支持 macOS / Windows / Linux（Linux 目前在 Ubuntu + GNOME 上实测）。扫描、删除边界和只读缓存修复由跨平台 CI 验证；回收站桌面交互需在当前系统核实。服务连续 30 分钟无请求自动退出。
 
 **怎么触发**
 

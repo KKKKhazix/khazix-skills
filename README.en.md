@@ -27,7 +27,7 @@ Every skill here is a structured instruction set that agents load directly. Foll
 | Name | One-liner | Article |
 |---|---|---|
 | 🧭 [**leader**](#-leader) | Turns a vague idea into a clearly defined **goal** an agent can run for hours, on its own, to completion | — |
-| 💽 [**storage-analyzer**](#-storage-analyzer) | One sentence to scan your whole Mac / Windows drive — three-tier cleanup plan, one-click trash from the browser | [Article (Chinese)](https://mp.weixin.qq.com/s/NyOMIlOD986OC4SI9vmxlA) |
+| 💽 [**storage-analyzer**](#-storage-analyzer) | One sentence to scan your whole Mac / Windows / Linux drive — three-tier cleanup plan, one-click trash from the browser | [Article (Chinese)](https://mp.weixin.qq.com/s/NyOMIlOD986OC4SI9vmxlA) |
 | 🔥 [**aihot**](#-aihot-ai-hot-news-query) | Lets your agent pull AI HOT's daily report and all AI news from aihot.news with one Chinese sentence — no API key | [aihot.news](https://aihot.news) |
 | 🧹 [**neat-freak**](#-neat-freak) | After a session, run `/neat` to reconcile docs, CLAUDE.md, and agent memory, then audit whether project rules are actually followed | [Article (Chinese)](https://mp.weixin.qq.com/s/tg1wd-iN2gWHWhXdY0faeg) |
 | 🔭 [**hv-analysis**](#-hv-analysis-horizontal-vertical-analysis) | Drop a product/company/concept into it and get a deep research report with PDF, Markdown and optional HTML output | [Article (Chinese)](https://mp.weixin.qq.com/s/Y_uRMYBmdLWUPnz_ac7jWA) |
@@ -146,7 +146,7 @@ This skill is agent-driven. Every entry comes with **specific path + content cla
 
 Scanning is read-only. Browser deletion requires confirmation; agents may execute a specifically authorized cleanup without asking again. The local service checks hosts, tokens and paths, and exits after 30 idle minutes.
 
-macOS is fully tested; Windows is code-ready (multi-drive supported) but worth eyeballing on first run.
+Supports macOS, Windows and Linux (Linux tested on Ubuntu + GNOME). Scanning, deletion boundaries and read-only cache handling are covered by cross-platform CI; check Trash / Recycle Bin behaviour on your own machine. The local server exits after 30 minutes without requests.
 
 **How to trigger**
 

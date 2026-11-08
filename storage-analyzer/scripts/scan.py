@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only storage scanner (macOS + Windows).
+"""Read-only storage scanner (macOS + Windows + Linux).
 
 Collects disk usage, system info, and per-directory size breakdowns for the
 hot spots that typically eat disk, and emits one JSON blob to stdout for Claude
@@ -50,8 +50,13 @@ def run(cmd, timeout=180):
         return ""
 
 
-def du_children(path, min_kb=51200, limit=40):
-    """Size every immediate child of `path` via du, sorted desc. macOS."""
+def du_children(path, min_kb=51200, limit=40, same_volume=True):
+    """Size every immediate child of `path` via du, sorted desc (macOS, Linux).
+
+    same_volume=True skips mount points and nested mounts (macOS: another
+    volume is another disk). Linux passes False: ZFS datasets and btrfs
+    subvolumes are separate mounts that still use the same pool or disk.
+    """
     if not os.path.isdir(path):
         return []
     results = []
@@ -68,7 +73,7 @@ def du_children(path, min_kb=51200, limit=40):
         if os.path.islink(child):
             continue
         try:
-            if os.lstat(child).st_dev != parent_dev:
+            if same_volume and os.lstat(child).st_dev != parent_dev:
                 # A mount point (e.g. Xcode's FSKit CoreDevice/DeviceFS): its
                 # contents live on another volume, not on this disk.
                 SCAN_ERRORS.add("已跳过挂载点（属于另一个卷，不占本盘空间）：" + child)
@@ -76,7 +81,7 @@ def du_children(path, min_kb=51200, limit=40):
         except OSError:
             continue
         # -x: stay on this volume, so mounts nested deeper are not counted.
-        out = run(["du", "-skx", child], timeout=120)
+        out = run(["du", "-skx" if same_volume else "-sk", child], timeout=120)
         m = re.match(r"\s*(\d+)", out)
         if not m:
             continue
@@ -170,7 +175,7 @@ def scan_macos():
 
 
 # ======================================================================
-# Windows  (UNTESTED on this build — stdlib only: os, shutil, ctypes)
+# Windows  (stdlib only: os, shutil, ctypes)
 # ======================================================================
 def is_link(st):
     return stat.S_ISLNK(st.st_mode) or getattr(st, "st_reparse_tag", 0) in (0xA0000003, 0xA000000C)
@@ -324,6 +329,152 @@ def scan_windows():
 
 
 # ======================================================================
+# Linux (GNOME/Debian-family first; tested on Ubuntu 26.04 + ZFS)
+# ======================================================================
+def system_info_linux():
+    import platform as _platform
+    info = {}
+    pretty = ""
+    try:
+        with open("/etc/os-release", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("PRETTY_NAME="):
+                    pretty = line.split("=", 1)[1].strip().strip('"')
+                    break
+    except OSError:
+        pass
+    info["os"] = pretty or ("Linux " + _platform.release())
+    info["build"] = _platform.release()
+    arch = _platform.machine()
+    brand = ""
+    try:
+        with open("/proc/cpuinfo", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("model name"):
+                    brand = line.split(":", 1)[1].strip()
+                    break
+    except OSError:
+        pass
+    info["arch"] = f"{arch}{' / ' + brand if brand else ''}"
+    info["user"] = os.environ.get("USER", "") or run(["whoami"]).strip()
+    info["home"] = HOME
+    disks, root = list_disks_linux()
+    main_disk = next((d for d in disks if d["name"] == root), None)
+    if main_disk:
+        sizes = (main_disk["total"], main_disk["used"], main_disk["free"])
+    else:
+        # df unavailable/unparseable (e.g. BusyBox): fall back to the root filesystem.
+        try:
+            sizes = shutil.disk_usage("/")
+        except OSError:
+            sizes = None
+    info["disk_total"], info["disk_used"], info["disk_free"] = (
+        (human(v // 1024) for v in sizes) if sizes else ("?", "?", "?"))
+    info["disks"] = [{"name": d["name"], "total": human(d["total"] // 1024),
+                      "used": human(d["used"] // 1024),
+                      "free": human(d["free"] // 1024)} for d in disks]
+    fs = run(["findmnt", "-no", "FSTYPE", "/"]).strip()
+    info["filesystem"] = fs or "unknown"
+    info["purgeable"] = ""
+    info["disk_name"] = root or "/"
+    return info
+
+
+def list_disks_linux():
+    """One entry per real filesystem from GNU df (bytes), and the one holding /.
+
+    - ZFS: datasets of a pool share its free space, and df Used is only what
+      each dataset references itself (child datasets are separate mounts), so a
+      pool's used is the sum over its mounted datasets and free counts once.
+      Snapshots are not included.
+    - A source listed more than once (btrfs subvolumes, bind mounts) is one
+      filesystem and is counted once.
+    Mounts under 10 MB used are noise. GNU df only; BusyBox yields nothing.
+    """
+    out = run(["df", "-B1", "--output=source,fstype,size,used,avail,target",
+               "-x", "tmpfs", "-x", "devtmpfs", "-x", "squashfs", "-x", "overlay"])
+    disks, root = {}, ""
+    for line in out.splitlines()[1:]:
+        parts = line.split(None, 5)
+        if len(parts) < 6:
+            continue
+        src, fstype, target = parts[0], parts[1], parts[5]
+        try:
+            size, used, avail = (int(p) for p in parts[2:5])
+        except ValueError:
+            continue
+        name = src.split("/")[0] if fstype == "zfs" else src
+        if target == "/":
+            root = name
+        disk = disks.get(name)
+        if disk is None:
+            disks[name] = {"name": name, "used": used, "free": avail,
+                           "total": used + avail if fstype == "zfs" else size}
+        elif fstype == "zfs":
+            disk["used"] += used
+            disk["total"] = disk["used"] + disk["free"]
+    kept = [d for d in disks.values() if d["used"] >= 10 * 1024 * 1024 or d["name"] == root]
+    kept.sort(key=lambda d: d["used"], reverse=True)
+    return kept, root
+
+
+LINUX_TARGETS = [
+    ("home", HOME, 102400),
+    ("cache", os.path.join(HOME, ".cache"), 51200),
+    ("local_share", os.path.join(HOME, ".local/share"), 51200),
+    ("downloads", os.path.join(HOME, "Downloads"), 51200),
+    ("system", "/var", 102400),
+    ("tmp", "/tmp", 51200),
+    ("dev_caches", None, 51200),
+]
+
+LINUX_DEV_CACHE_PATHS = [
+    "~/.cache/pip", "~/.cache/uv", "~/.cache/huggingface",
+    "~/.cache/ms-playwright", "~/.cache/Yarn", "~/.cache/google-cloud",
+    "~/.cargo", "~/.rustup", "~/.npm", "~/.pnpm-store",
+    "~/.gradle", "~/.m2", "~/.nuget/packages",
+    "~/go/pkg", "~/.docker", "~/.conda", "~/.ollama",
+    "~/.local/share/uv", "~/.local/share/pnpm", "~/.local/share/containers",
+    "~/.local/share/Trash", "~/.vscode/extensions",
+    "~/snap", "~/.cache",
+]
+
+
+def dev_caches_linux():
+    results = []
+    for p in LINUX_DEV_CACHE_PATHS:
+        path = os.path.expanduser(p)
+        if not os.path.isdir(path) or os.path.islink(path):
+            continue
+        out = run(["du", "-sk", path], timeout=180)
+        m = re.match(r"\s*(\d+)", out)
+        if not m:
+            continue
+        kb = int(m.group(1))
+        if kb < 51200:
+            continue
+        results.append({"name": os.path.basename(path.rstrip("/")) or path,
+                        "path": path, "size_kb": kb, "size_h": human(kb)})
+    seen, dedup = set(), []
+    for r in results:
+        if r["path"] in seen:
+            continue
+        seen.add(r["path"])
+        dedup.append(r)
+    dedup.sort(key=lambda r: r["size_kb"], reverse=True)
+    return dedup
+
+
+def scan_linux():
+    system = system_info_linux()
+    groups = {}
+    for key, path, floor in LINUX_TARGETS:
+        groups[key] = (dev_caches_linux() if key == "dev_caches"
+                       else du_children(path, min_kb=floor, same_volume=False))
+    return system, groups
+
+
+# ======================================================================
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     SCAN_ERRORS.clear()
@@ -332,9 +483,11 @@ def main():
         system, groups = scan_macos()
     elif sys.platform.startswith("win"):
         system, groups = scan_windows()
+    elif sys.platform.startswith("linux"):
+        system, groups = scan_linux()
     else:
         print(json.dumps({"error": "unsupported_platform", "platform": sys.platform,
-                          "message": "scan.py supports macOS and Windows only."},
+                          "message": "scan.py supports macOS, Windows and Linux only."},
                          ensure_ascii=False))
         return
     data = {

@@ -156,7 +156,8 @@
 const DATA = __REPORT_DATA__;
 const DELETE = __DELETE_CONFIG__; // null=静态只读报告；{token,endpoint}=server.py 提供一键删除
 document.querySelector('footer').textContent = DELETE ? 'storage-analyzer · 操作需确认 · 闲置 30 分钟服务退出' : 'storage-analyzer · 只读报告';
-const FM = (DATA.system && /win/i.test(DATA.system.os||'')) ? '资源管理器' : '访达'; // 文件管理器名，按系统
+const OS_NAME = (DATA.system && DATA.system.os) || '';
+const FM = /win/i.test(OS_NAME) ? '资源管理器' : /mac/i.test(OS_NAME) ? '访达' : '文件管理器'; // 文件管理器名，按系统
 
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 // "约" 已表示估算，去掉冗余的"（估算…）"括号让大小显示更干净专业

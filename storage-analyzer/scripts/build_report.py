@@ -13,8 +13,8 @@ Schema (all sections optional except system):
   "system": {os, build, arch, user, home, filesystem,
              disk_total, disk_used, disk_free, purgeable},
   "top5": [{rank, tier(green|yellow|red), size, type, name, path, note}],
-  "green":  [{name, path, size_estimate, kill_processes:[], trash_paths:[...], commands:[{label,cmd}]}],
-  "yellow": [{name, path, size, content_profile, why_manual, disposal, risk, trash_paths:[...]?, open_note?}],
+  "green":  [{name, path, size_estimate, kill_processes:[], trash_paths:[...], clear_contents?, commands:[{label,cmd}]}],
+  "yellow": [{name, path, size, content_profile, why_manual, disposal, risk, trash_paths:[...]?, clear_contents?, open_note?}],
   "red":    [{name, path, size, why_keep, indirect_release, auto_reclaim, app_paths:[...]?}],
   "denied": ["/path/one", ...],
   "summary": {overview, tier_stats:{green,yellow,red}, priority:[...], long_term:[...]}

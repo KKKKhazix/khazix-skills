@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Serve the storage report with a guarded one-click delete API (macOS + Windows).
+"""Serve the storage report with a guarded one-click delete API (macOS + Windows + Linux).
 
 Starts on 127.0.0.1 + a random port + a random per-session token, serves the
 interactive report, and exposes POST /action for the report's permitted actions.
@@ -15,8 +15,12 @@ SAFETY MODEL — read before changing:
   report-listed apps additionally permits the platform application directories.
 - Bound to 127.0.0.1 only; every POST requires the session token; Host header
   must be 127.0.0.1 (blocks DNS-rebinding from a malicious page).
-- Two modes: "trash" (Finder -> Trash, reversible) and "rm" (immediate,
+- Two modes: "trash" (Finder / gio -> Trash, reversible) and "rm" (immediate,
   irreversible). The browser confirms each action before sending.
+- Item flag "clear_contents": approved directory is emptied child-by-child and
+  the directory itself is kept, so symlinks pointing at it (e.g. ~/.cache ->
+  ~/.dev-cache/cache) never dangle. Without the flag a directory is removed
+  whole (original behaviour).
 """
 import json
 import os
@@ -43,6 +47,9 @@ TRASH_ALLOW = set()
 OPEN_ALLOW = set()
 
 
+CLEAR_CONTENTS = set()  # realpath'd dirs whose CONTENTS are cleared, dir kept
+
+
 def expand(p):
     return os.path.realpath(os.path.expanduser(p))
 
@@ -56,15 +63,23 @@ def load(src):
     #   rm    = 仅绿灯 trash_paths（可直接删的纯缓存）
     #   trash = 绿灯 + 橙灯 trash_paths（橙灯只准移废纸篓，不准直接删）
     #   open  = trash 全集 + 橙灯 path + 红灯 app_paths（仅"在文件管理器打开"，非破坏性）
+    # clear_contents: 带该标志的条目，删除时只清目录内容、保留目录本身。
     rm_allow, trash_allow, open_allow = set(), set(), set()
+    CLEAR_CONTENTS.clear()
     for it in data.get("green", []):
+        clear = bool(it.get("clear_contents"))
         for p in (it.get("trash_paths") or []):
             rp = expand(p)
             rm_allow.add(rp); trash_allow.add(rp); open_allow.add(rp)
+            if clear:
+                CLEAR_CONTENTS.add(rp)
     for it in data.get("yellow", []):
+        clear = bool(it.get("clear_contents"))
         for p in (it.get("trash_paths") or []):
             rp = expand(p)
             trash_allow.add(rp); open_allow.add(rp)
+            if clear:
+                CLEAR_CONTENTS.add(rp)
         if it.get("path"):
             rp = expand(it["path"])
             if os.path.exists(rp):
@@ -78,13 +93,30 @@ def load(src):
     return data, tpl, rm_allow, trash_allow, open_allow
 
 
+def clear_contents(directory, action):
+    """Apply `action` to every child of `directory`, keeping the directory.
+
+    The directory may be referenced by symlinks (e.g. ~/.cache ->
+    ~/.dev-cache/cache); removing it whole would leave them dangling. Children
+    are enumerated with scandir (hidden files included) and each is passed to
+    `action` unchanged — links stay links (never followed), matching
+    hard_delete/move_to_trash semantics.
+    """
+    for entry in sorted(os.scandir(directory), key=lambda e: e.name):
+        if not os.path.lexists(entry.path):
+            continue
+        action(entry.path)
+
+
 def move_to_trash(path):
     if sys.platform == "darwin":
         _trash_macos(path)
     elif sys.platform.startswith("win"):
         _trash_windows(path)
+    elif sys.platform.startswith("linux"):
+        _trash_linux(path)
     else:
-        raise OSError("移到废纸篓仅支持 macOS / Windows")
+        raise OSError("移到废纸篓仅支持 macOS / Windows / Linux")
 
 
 def _trash_macos(path):
@@ -100,7 +132,7 @@ def _trash_macos(path):
 
 def _trash_windows(path):
     # Send to Recycle Bin via SHFileOperationW with FOF_ALLOWUNDO (stdlib ctypes).
-    # UNTESTED on this build — verify on a real Windows machine.
+    # CI cannot click the desktop Recycle Bin; verify that part on a real Windows machine.
     import ctypes
     from ctypes import wintypes
 
@@ -129,6 +161,24 @@ def _trash_windows(path):
         raise OSError("回收站操作已取消，未完成")
     if rc != 0 and not (rc == 2 and not os.path.exists(path)):
         raise OSError("SHFileOperation failed (code %d)" % rc)
+
+
+def _trash_linux(path):
+    # gio trash -> XDG trash (~/.local/share/Trash), recoverable. Needs GIO
+    # (GNOME and most desktops ship it); falls back to trash-cli's `trash`.
+    if shutil.which("gio"):
+        r = subprocess.run(["gio", "trash", path], capture_output=True, text=True)
+        if r.returncode == 0:
+            return
+        err = (r.stderr or r.stdout or "").strip()
+    elif shutil.which("trash"):
+        r = subprocess.run(["trash", path], capture_output=True, text=True)
+        if r.returncode == 0:
+            return
+        err = (r.stderr or "").strip()
+    else:
+        err = "未找到 gio 或 trash 命令"
+    raise OSError(err or "gio trash 失败")
 
 
 def is_link(path):
@@ -208,8 +258,12 @@ def open_in_file_manager(path):
                 raise OSError((r.stderr or r2.stderr or "open 失败").strip())
     elif sys.platform.startswith("win"):
         subprocess.run(["explorer", target])  # explorer 退出码不可靠，不据此判成败
+    elif sys.platform.startswith("linux"):
+        r = subprocess.run(["xdg-open", target], capture_output=True, text=True)
+        if r.returncode != 0:
+            raise OSError((r.stderr or "xdg-open 失败").strip())
     else:
-        raise OSError("打开文件夹仅支持 macOS / Windows")
+        raise OSError("打开文件夹仅支持 macOS / Windows / Linux")
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -284,9 +338,15 @@ class Handler(BaseHTTPRequestHandler):
                 elif not os.path.exists(rp):
                     pass  # already gone, treat as success
                 elif mode == "trash":
-                    move_to_trash(rp)
+                    if rp in CLEAR_CONTENTS and os.path.isdir(rp):
+                        clear_contents(rp, move_to_trash)
+                    else:
+                        move_to_trash(rp)
                 else:
-                    hard_delete(rp)
+                    if rp in CLEAR_CONTENTS and os.path.isdir(rp):
+                        clear_contents(rp, hard_delete)
+                    else:
+                        hard_delete(rp)
                 done.append(p)
             except Exception as e:
                 self._send(500, json.dumps({"ok": False, "error": str(e), "done": done}))
