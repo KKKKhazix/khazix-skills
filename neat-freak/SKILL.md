@@ -15,7 +15,7 @@ description: >-
   project-knowledge context.
 compatibility: Requires filesystem read access. Writes and destructive actions follow the active agent, workspace, and user authorization rules. Git and rg improve verification; scripts/audit-inventory.sh needs Bash — without it, do the equivalent checks manually. Works on any Agent Skills platform.
 metadata:
-  version: "3.1.0"
+  version: "3.1.1"
   category: knowledge-governance
 ---
 

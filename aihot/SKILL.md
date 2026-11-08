@@ -40,4 +40,4 @@ metadata:
 - 只根据返回内容回答。查不到就如实说，不用训练记忆或其它新闻源冒充 AIHOT 的实时结果。
 - 请求失败：429 按 `Retry-After` 等待；5xx 或超时等几秒重试一次；仍失败就告诉用户 AIHOT 暂时不可用，并附 `https://aihot.news`。
 - 不需要、也不得索要用户的 API Key、cookie、账号或文件。
-- 匿名访问不代表所有用途均获许可：个人非商业、公益非商业和组织内部使用免费；面向外部的商业用途须事先取得 AIHOT 书面授权，见 `https://aihot.news/terms`（授权联系 wzglyay@virxact.com）。`LICENSE` 的 MIT 许可只覆盖本 Skill 文件，不覆盖 AIHOT 的服务、数据和第三方原文。
+- 匿名访问不代表所有用途均获许可：个人非商业、公益非商业和组织内部使用免费；面向外部的商业用途须事先取得 AIHOT 书面授权，见 `https://aihot.news/terms`（授权联系 agent@virxact.com）。`LICENSE` 的 MIT 许可只覆盖本 Skill 文件，不覆盖 AIHOT 的服务、数据和第三方原文。
