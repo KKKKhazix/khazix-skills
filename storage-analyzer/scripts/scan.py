@@ -50,8 +50,13 @@ def run(cmd, timeout=180):
         return ""
 
 
-def du_children(path, min_kb=51200, limit=40):
-    """Size every immediate child of `path` via du, sorted desc. macOS."""
+def du_children(path, min_kb=51200, limit=40, same_volume=True):
+    """Size every immediate child of `path` via du, sorted desc (macOS, Linux).
+
+    same_volume=True skips mount points and nested mounts (macOS: another
+    volume is another disk). Linux passes False: ZFS datasets and btrfs
+    subvolumes are separate mounts that still use the same pool or disk.
+    """
     if not os.path.isdir(path):
         return []
     results = []
@@ -68,7 +73,7 @@ def du_children(path, min_kb=51200, limit=40):
         if os.path.islink(child):
             continue
         try:
-            if os.lstat(child).st_dev != parent_dev:
+            if same_volume and os.lstat(child).st_dev != parent_dev:
                 # A mount point (e.g. Xcode's FSKit CoreDevice/DeviceFS): its
                 # contents live on another volume, not on this disk.
                 SCAN_ERRORS.add("已跳过挂载点（属于另一个卷，不占本盘空间）：" + child)
@@ -76,7 +81,7 @@ def du_children(path, min_kb=51200, limit=40):
         except OSError:
             continue
         # -x: stay on this volume, so mounts nested deeper are not counted.
-        out = run(["du", "-skx", child], timeout=120)
+        out = run(["du", "-skx" if same_volume else "-sk", child], timeout=120)
         m = re.match(r"\s*(\d+)", out)
         if not m:
             continue
@@ -170,7 +175,7 @@ def scan_macos():
 
 
 # ======================================================================
-# Windows  (UNTESTED on this build — stdlib only: os, shutil, ctypes)
+# Windows  (stdlib only: os, shutil, ctypes)
 # ======================================================================
 def is_link(st):
     return stat.S_ISLNK(st.st_mode) or getattr(st, "st_reparse_tag", 0) in (0xA0000003, 0xA000000C)
@@ -353,72 +358,64 @@ def system_info_linux():
     info["arch"] = f"{arch}{' / ' + brand if brand else ''}"
     info["user"] = os.environ.get("USER", "") or run(["whoami"]).strip()
     info["home"] = HOME
-    kept = list_mounts_linux()
-    if kept:
-        # Aggregate across top-level datasets: Used sums; Avail counted once per
-        # pool (ZFS datasets on one pool all report the same pool-wide free).
-        free_by_pool = {}
-        for r in kept:
-            pool = r["src"].split("/")[0] or r["src"]
-            free_by_pool.setdefault(pool, r["avail"])
-        used_sum = sum(r["used"] for r in kept)
-        free_sum = sum(free_by_pool.values())
-        total, used, free = used_sum + free_sum, used_sum, free_sum
-        info["disk_total"] = human(total // 1024)
-        info["disk_used"] = human(used // 1024)
-        info["disk_free"] = human(free // 1024)
-        info["disks"] = [{"name": r["src"], "total": human(r["size"] // 1024),
-                          "used": human(r["used"] // 1024),
-                          "free": human(r["avail"] // 1024)} for r in kept]
+    disks, root = list_disks_linux()
+    main_disk = next((d for d in disks if d["name"] == root), None)
+    if main_disk:
+        sizes = (main_disk["total"], main_disk["used"], main_disk["free"])
     else:
-        # df unavailable/unparseable (e.g. BusyBox): degrade to the root fs.
+        # df unavailable/unparseable (e.g. BusyBox): fall back to the root filesystem.
         try:
-            t, u, f = shutil.disk_usage("/")
-            info["disk_total"] = human(t // 1024)
-            info["disk_used"] = human(u // 1024)
-            info["disk_free"] = human(f // 1024)
-        except Exception:
-            info["disk_total"] = info["disk_used"] = info["disk_free"] = "?"
-        info["disks"] = []
+            sizes = shutil.disk_usage("/")
+        except OSError:
+            sizes = None
+    info["disk_total"], info["disk_used"], info["disk_free"] = (
+        (human(v // 1024) for v in sizes) if sizes else ("?", "?", "?"))
+    info["disks"] = [{"name": d["name"], "total": human(d["total"] // 1024),
+                      "used": human(d["used"] // 1024),
+                      "free": human(d["free"] // 1024)} for d in disks]
     fs = run(["findmnt", "-no", "FSTYPE", "/"]).strip()
     info["filesystem"] = fs or "unknown"
     info["purgeable"] = ""
-    src = run(["findmnt", "-no", "SOURCE", "/"]).strip()
-    info["disk_name"] = src or "/"
+    info["disk_name"] = root or "/"
     return info
 
 
-def list_mounts_linux():
-    """Real mounted filesystems from df, with ZFS dataset-nesting dedup.
+def list_disks_linux():
+    """One entry per real filesystem from GNU df (bytes), and the one holding /.
 
-    df columns: Filesystem Size Used Avail Use% Mounted-on (bytes via -B1).
-    Nested ZFS datasets (rpool/.../var/log under rpool/...) are dropped: the
-    parent dataset's Used already includes them. Sub-10MB mounts are noise.
-    GNU df only; on BusyBox the parse yields nothing and callers degrade.
+    - ZFS: datasets of a pool share its free space, and df Used is only what
+      each dataset references itself (child datasets are separate mounts), so a
+      pool's used is the sum over its mounted datasets and free counts once.
+      Snapshots are not included.
+    - A source listed more than once (btrfs subvolumes, bind mounts) is one
+      filesystem and is counted once.
+    Mounts under 10 MB used are noise. GNU df only; BusyBox yields nothing.
     """
-    out = run(["df", "-B1", "-x", "tmpfs", "-x", "devtmpfs", "-x", "squashfs",
-               "-x", "overlay", "-x", "cgroup2", "-x", "proc", "-x", "sysfs"])
-    rows = []
+    out = run(["df", "-B1", "--output=source,fstype,size,used,avail,target",
+               "-x", "tmpfs", "-x", "devtmpfs", "-x", "squashfs", "-x", "overlay"])
+    disks, root = {}, ""
     for line in out.splitlines()[1:]:
-        parts = line.split()
+        parts = line.split(None, 5)
         if len(parts) < 6:
             continue
-        src, size_s, used_s, avail_s = parts[0], parts[1], parts[2], parts[3]
-        if src.startswith(("proc", "sysfs", "cgroup", "tmpfs")):
-            continue
+        src, fstype, target = parts[0], parts[1], parts[5]
         try:
-            size, used, avail = int(size_s), int(used_s), int(avail_s)
+            size, used, avail = (int(p) for p in parts[2:5])
         except ValueError:
             continue
-        rows.append({"src": src, "size": size, "used": used, "avail": avail})
-    kept = []
-    for r in sorted(rows, key=lambda r: r["src"]):
-        if any(r["src"].startswith(k["src"] + "/") for k in kept):
-            continue
-        kept.append(r)
-    kept = [r for r in kept if r["used"] >= 10 * 1024 * 1024]
-    kept.sort(key=lambda r: r["used"], reverse=True)
-    return kept
+        name = src.split("/")[0] if fstype == "zfs" else src
+        if target == "/":
+            root = name
+        disk = disks.get(name)
+        if disk is None:
+            disks[name] = {"name": name, "used": used, "free": avail,
+                           "total": used + avail if fstype == "zfs" else size}
+        elif fstype == "zfs":
+            disk["used"] += used
+            disk["total"] = disk["used"] + disk["free"]
+    kept = [d for d in disks.values() if d["used"] >= 10 * 1024 * 1024 or d["name"] == root]
+    kept.sort(key=lambda d: d["used"], reverse=True)
+    return kept, root
 
 
 LINUX_TARGETS = [
@@ -473,7 +470,7 @@ def scan_linux():
     groups = {}
     for key, path, floor in LINUX_TARGETS:
         groups[key] = (dev_caches_linux() if key == "dev_caches"
-                       else du_children(path, min_kb=floor))
+                       else du_children(path, min_kb=floor, same_volume=False))
     return system, groups
 
 

@@ -132,7 +132,7 @@ def _trash_macos(path):
 
 def _trash_windows(path):
     # Send to Recycle Bin via SHFileOperationW with FOF_ALLOWUNDO (stdlib ctypes).
-    # UNTESTED on this build — verify on a real Windows machine.
+    # CI cannot click the desktop Recycle Bin; verify that part on a real Windows machine.
     import ctypes
     from ctypes import wintypes
 

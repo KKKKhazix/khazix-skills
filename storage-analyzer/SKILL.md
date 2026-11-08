@@ -1,7 +1,7 @@
 ---
 name: storage-analyzer
 description: >
-  macOS / Windows / Linux（Ubuntu GNOME 实测）只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出
+  macOS / Windows / Linux 只读存储分析助手（自动识别系统）。扫描整机磁盘占用，找出
   占空间大户，把每一项分成 🟢可自动清理 / 🟡需人工判断 / 🔴谨慎清理 三级并给出
   可执行处置方案，生成排版精美、可折叠、命令可一键复制的交互式 HTML 报告，并可
   起本地服务在网页上一键删除（移废纸篓/直接删）。扫描全程只读。务必在以下场景
@@ -38,7 +38,7 @@ python3 "$STORAGE_SKILL_DIR/scripts/scan.py" > storage_scan.json
 `scan.py` 自动识别系统（`sys.platform`）：
 - **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du -x` 算大小（不跨卷）。挂载点会被跳过并写进 `warnings`，例如 Xcode 的 `~/Library/Developer/CoreDevice/DeviceFS`：它是模拟器/设备文件系统的虚拟挂载，显示几十 GB 但不占本盘空间，不要当成清理项。二次深入查看时同样用 `du -x`。
 - **Windows**：扫 user_profile、appdata_local、appdata_roaming、temp、downloads、program_files(_x86)、dev_caches，用 `os.scandir` 算大小；`system.disks` 含所有盘符。
-- **Linux**：扫 home、`.cache`、`.local/share`、downloads、`/var`、`/tmp`、dev_caches（pip/uv/cargo/npm/go/docker/snap 等），用 `du` 算大小；`system.disks` 来自 `df`（GNU df，解析失败时降级为根分区单盘信息）。
+- **Linux**：扫 home、`.cache`、`.local/share`、downloads、`/var`、`/tmp`、dev_caches（pip/uv/cargo/npm/go/docker/snap 等），用 `du` 算大小，不跳过挂载点（ZFS 数据集、btrfs 子卷和本盘同池）；`system.disks` 来自 GNU `df`，按 ZFS 池或设备合并，主盘是装着 `/` 的那个（解析失败时降级为根分区信息）。
 
 输出 JSON：`system`（系统/磁盘信息，含 `disk_name` 主盘名 + `disks` 全部盘）+ `groups`（各组子目录大小，已降序、过滤 50MB 以下）。Windows 同次扫描复用子目录统计，避免重复遍历。顶层分组存在父子包含关系，不能直接相加；可释放空间还受硬链接、压缩和回收站保留影响。读取 `warnings` 并在报告中说明未读全的路径。读不到的目录标 `denied`，需在报告里列出并提示遗漏体量。
 
@@ -52,7 +52,7 @@ Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 "$STORAGE_SKILL_
 2. **识别"神秘大目录"**：UUID 命名的 Container、不明的隐藏目录，要追查它属于哪个 App、装的是什么（例如某 97GB 的 UUID Container 实为 Bilibili 离线视频缓存）。必要时 `ls`/`du` 深入一层看清楚，但仍只读。
 3. **三级分类 = 清理决策清单，不是全盘点。** 只把"存在'要不要动它'这个决策"的项放进三灯；日常在用的正常应用、操作系统本身、海量零碎小文件没有清理决策，不进三灯，它们落在磁盘条的蓝色"系统及其他"里。判定标准：
    - 🟢 **可自动清理**：纯缓存、临时文件、安装包残留、明确可再生且不影响功能、不丢用户数据（pip/uv/npm/Xcode DerivedData 等开发缓存、浏览器缓存）。
-   - 🟡 **需人工判断**：含用户数据或有判断成本（离线视频、文档、项目代码 node_modules、聊天记录、设计稿）。给内容画像 + 至少 3 句处置路径（应用内清理 / 系统工具 / 文件管理器手动审查，三选最合适）+ 风险提示。**所有橙灯项在服务模式下自动有「在访达/资源管理器打开」按钮**（跳过去自己审查删）；如果该项有一个核实过、删了不破坏 App 的安全子路径（如 B站离线视频的 `.Downloads` 目录、旧备份目录），给它 `trash_paths` → 网页出现「移到废纸篓」按钮（橙灯只准移废纸篓、可逆，绝不给"直接删除"）。App 托管又无安全子路径的（Chrome/微信）只给打开按钮、不给 trash_paths。按钮下方会自动写明注意事项（打开只查看不删、移废纸篓可逆需清空才释放等）；如果某项在文件管理器里是 App 内部格式、不方便手动挑选，给它一个 `open_note` 字段做客观说明（会显示在注意事项里）。**口吻要中性、像产品说明**：直接描述"这里是什么结构、为什么不好手动删、想精细操作该去哪"，不要写成"我发现/提醒注意/看着像没视频"这种暴露开发者踩坑视角的话。
+   - 🟡 **需人工判断**：含用户数据或有判断成本（离线视频、文档、项目代码 node_modules、聊天记录、设计稿）。给内容画像 + 至少 3 句处置路径（应用内清理 / 系统工具 / 文件管理器手动审查，三选最合适）+ 风险提示。**所有橙灯项在服务模式下自动有「在访达/资源管理器/文件管理器打开」按钮**（跳过去自己审查删）；如果该项有一个核实过、删了不破坏 App 的安全子路径（如 B站离线视频的 `.Downloads` 目录、旧备份目录），给它 `trash_paths` → 网页出现「移到废纸篓」按钮（橙灯只准移废纸篓、可逆，绝不给"直接删除"）。App 托管又无安全子路径的（Chrome/微信）只给打开按钮、不给 trash_paths。按钮下方会自动写明注意事项（打开只查看不删、移废纸篓可逆需清空才释放等）；如果某项在文件管理器里是 App 内部格式、不方便手动挑选，给它一个 `open_note` 字段做客观说明（会显示在注意事项里）。**口吻要中性、像产品说明**：直接描述"这里是什么结构、为什么不好手动删、想精细操作该去哪"，不要写成"我发现/提醒注意/看着像没视频"这种暴露开发者踩坑视角的话。
    - 🔴 **谨慎清理（有决策但不建议手删）**：你可能想动、但建议别手删的具体项——重复安装的应用、想卸载的大应用、运行中应用的核心数据等。给"为什么不建议手删" + `indirect_release` 写**具体卸载步骤**（自带卸载器 / 启动台长按 / 右键移废纸篓 / AppCleaner 清残留 / App Store 可重装等，要可照做不是空话）。应用项给 `app_paths`（真实 `.app` 绝对路径数组）→ 网页出现「在文件管理器打开（去卸载）」按钮，定位到 App 让用户自己正规卸载。**红灯不给删除/卸载按钮**（应用在系统目录、可能要管理员密码、可能有自带卸载器和残留，后台代删不稳妥）。**纯系统文件、APFS 快照不要单独列红卡**（没有清理决策），归蓝色即可；系统层面的释放技巧（重启释 swap、Time Machine 快照策略、可清除空间自动回收）写进 `summary.long_term` 长期建议。
 
 不要把项目、git worktree（包括 `.git` 指针文件）、项目依赖或整个开发工具目录当作缓存。Windows 二次查看大小也要排除 junction/symlink，不能只看体积或目录名判断可删。pnpm store 优先 `pnpm store prune`，Go 模块缓存优先 `go clean -modcache`；不提供整个 store、global 或工具安装根目录的删除按钮。硬链接不因删除另一条链接就失效，但也不能把逻辑大小当作一定可释放的空间。
@@ -67,7 +67,7 @@ Windows 使用 `py -3` 或 `python`；在 PowerShell 用 `py -3 "$STORAGE_SKILL_
 
 **🟢 项必须带 `trash_paths`**（具体可删的绝对路径数组，区别于人类可读的 `path` 展示字段）——这是网页删除按钮的前提，漏了按钮就不出现。
 
-**符号链接指向的目录必须加 `clear_contents: true`**：若清理目标被其他路径以符号链接引用（如 `~/.cache` → `~/.dev-cache/cache`、`~/.npm` → `~/.dev-cache/npm`），给该项加 `"clear_contents": true`——服务端只清空目录内容、保留目录本身，链接不会悬空；配套命令也写**内容级**（`find <dir> -mindepth 1 -maxdepth 1 -exec gio trash {} +` 或 `find <dir> -mindepth 1 -delete`），不要给整目录 `gio trash` / `rm -rf <dir>`。判断方法：`ls -ld <路径>` 看是否为 symlink，或 `realpath <路径>` 与展示路径是否不一致。
+**被符号链接引用的目录加 `clear_contents: true`**：清理目标被别的路径以符号链接指着时（如 `~/.cache` → `~/.dev-cache/cache`），给该项加 `"clear_contents": true`，服务端只清空目录里的内容、保留目录本身，链接不会悬空；配套命令也只清内容（如 `find <dir> -mindepth 1 -delete`），不给整目录删除或移废纸篓。判断方法：`ls -ld <路径>` 看是不是 symlink，或 `realpath <路径>` 与展示路径不一致。
 
 **默认用一键删除模式（`server.py`）打开报告**，因为这个 skill 的核心价值就是网页上能直接清理：
 ```bash
@@ -101,14 +101,14 @@ pills 只渲染解析出的纯数字（如"约 5.5 GB"），不显示数据里�
 - 全部脚本是 **Python 3 标准库**，零第三方依赖（不用 pip install）。
 - **macOS** 需要 Python 3；先检查 `python3 --version`。`du`、`diskutil`、`osascript` 由系统提供。
 - **Windows** 默认没装 Python——需先装 Python 3，且命令多为 `python` 或 `py -3`（不是 `python3`）。本 skill 命令示例写的是 `python3`，在 Windows 上自动改用 `python` / `py -3`。
-- **Linux** 自带 python3、`du`；扫描用 GNU `df`（BusyBox/Alpine 不支持 `-B1`/`-x` 时自动降级为单盘信息）；移废纸篓需 `gio`（GNOME 自带）或 `trash-cli`，打开文件夹需 `xdg-open`。
+- **Linux** 自带 python3、`du`；磁盘信息用 GNU `df`（BusyBox/Alpine 的 df 不支持时降级为根分区信息）；移废纸篓需 `gio`（GNOME 自带）或 `trash-cli`，打开文件夹需 `xdg-open`。
 - 本 skill 是 **agent 驱动**：扫描出数据后由 agent（Claude）做分级分析，不是双击即用的独立 App。
 
 ## 平台状态
 
 - **macOS**：完整实现并实测（扫描 / 报告 / 一键删除全验证过）。
 - **Windows**：代码已写（`scan.py` 的 `scan_windows`、`server.py` 的 `_trash_windows` 走 `SHFileOperationW`），包含社区 Windows 真机反馈对应的修复；自动化验证见仓库 CI，回收站桌面交互仍需按当前机器核实。首次在 Windows 跑要核对：目标目录路径、`os.scandir` 大小、回收站删除是否正常。多盘符已支持（主盘分段条 + 其他盘列表）。
-- **Linux**：适配新增（`scan_linux` + `gio trash` / `xdg-open`）。**仅在 Ubuntu 26.04.1 LTS + GNOME + ZFS 单机实测**（扫描 / 报告 / 服务模式 / `POST → gio trash → 回收站` 链路验证过）；依赖 GNU coreutils、GIO 或 trash-cli、xdg-open。扫描目标含 Debian 系路径（`~/snap` 等，无 snap 的发行版自动跳过）；`references/linux.md` 的清理示例已标注 Debian/Ubuntu 与 Fedora/Arch 的写法差异；KDE/XFCE、无桌面、Fedora/Arch/Alpine、非 ZFS 文件系统均未测。
+- **Linux**：适配新增（`scan_linux` + `gio trash` / `xdg-open`）。**仅在 Ubuntu 26.04.1 LTS + GNOME + ZFS 单机实测**（扫描 / 报告 / 服务模式 / `POST → gio trash → 回收站` 链路验证过）；依赖 GNU coreutils、GIO 或 trash-cli、xdg-open。扫描目标含 Debian 系路径（`~/snap` 等，无 snap 的发行版自动跳过）；`references/linux.md` 的清理示例已标注 Debian/Ubuntu 与 Fedora/Arch 的写法差异；KDE/XFCE、无桌面、Fedora/Arch/Alpine、非 ZFS 文件系统均未实机测过；磁盘汇总对 ext4、btrfs、ZFS 和外接盘的 `df` 输出有回归测试。
 
 ## 长期优化建议素材（写进报告 summary.long_term）
 

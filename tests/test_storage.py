@@ -111,4 +111,60 @@ class StorageTests(unittest.TestCase):
         try: self.assertEqual(scan.dir_size_bytes(str(self.cache)),5)
         finally: junction.rmdir()
 
+class DuChildrenTests(unittest.TestCase):
+    def test_mount_points_skipped_only_on_same_volume_scans(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp); (root / 'local').mkdir(); (root / 'mounted').mkdir()
+            real_lstat = os.lstat
+            def fake_lstat(path, *args, **kwargs):
+                st = real_lstat(path, *args, **kwargs)
+                if str(path).endswith('mounted'):  # pretend another filesystem is mounted here
+                    return os.stat_result((st.st_mode, st.st_ino, st.st_dev + 1) + tuple(st)[3:])
+                return st
+            fake_du = lambda cmd, timeout=180: '2048\t' + cmd[-1]
+            with patch.object(scan.os, 'lstat', fake_lstat), patch.object(scan, 'run', fake_du):
+                mac = [r['name'] for r in scan.du_children(str(root), min_kb=1)]
+                linux = [r['name'] for r in scan.du_children(str(root), min_kb=1, same_volume=False)]
+        scan.SCAN_ERRORS.clear()
+        self.assertEqual(mac, ['local'])
+        self.assertEqual(sorted(linux), ['local', 'mounted'])
+
+class LinuxDiskTests(unittest.TestCase):
+    """GNU df output -> disk overview; df Used on ZFS is per dataset (children excluded)."""
+    HEADER = 'Filesystem Type 1B-blocks Used Avail Mounted on\n'
+    def system(self, rows):
+        out = self.HEADER + '\n'.join(rows) + '\n'
+        with patch.object(scan, 'run', lambda cmd, timeout=180: out if cmd[0] == 'df' else ''):
+            return scan.system_info_linux()
+    def test_zfs_pool_sums_datasets_and_counts_free_once(self):
+        s = self.system([
+            'rpool/ROOT/ubuntu_abc zfs 400000000000 10000000000 390000000000 /',
+            'rpool/ROOT/ubuntu_abc/var/lib zfs 420000000000 30000000000 390000000000 /var/lib',
+            'rpool/USERDATA/home_abc zfs 450000000000 60000000000 390000000000 /home/u',
+            'bpool/BOOT/ubuntu_abc zfs 1800000000 200000000 1600000000 /boot',
+            '/dev/nvme0n1p1 vfat 536000000 6000000 530000000 /boot/efi'])
+        self.assertEqual(s['disk_name'], 'rpool')
+        self.assertEqual(s['disk_used'], scan.human(100000000000 // 1024))
+        self.assertEqual(s['disk_total'], scan.human(490000000000 // 1024))
+        self.assertEqual([d['name'] for d in s['disks']], ['rpool', 'bpool'])
+    def test_btrfs_subvolumes_are_one_disk(self):
+        s = self.system([
+            '/dev/nvme0n1p3 btrfs 500000000000 120000000000 378000000000 /',
+            '/dev/nvme0n1p3 btrfs 500000000000 120000000000 378000000000 /home',
+            '/dev/nvme0n1p2 ext4 1000000000 300000000 600000000 /boot'])
+        self.assertEqual(s['disk_used'], scan.human(120000000000 // 1024))
+        self.assertEqual(s['disk_total'], scan.human(500000000000 // 1024))
+        self.assertEqual(len(s['disks']), 2)
+    def test_external_drive_is_listed_but_not_main_disk(self):
+        s = self.system([
+            '/dev/sda2 ext4 250000000000 80000000000 157000000000 /',
+            '/dev/sdb1 exfat 1000000000000 400000000000 600000000000 /media/u/USB DRIVE'])
+        self.assertEqual(s['disk_name'], '/dev/sda2')
+        self.assertEqual(s['disk_total'], scan.human(250000000000 // 1024))
+        self.assertEqual({d['name'] for d in s['disks']}, {'/dev/sda2', '/dev/sdb1'})
+    def test_unparseable_df_falls_back_to_root(self):
+        s = self.system(['df: unrecognized option'])
+        self.assertEqual((s['disk_name'], s['disks']), ('/', []))
+        self.assertNotEqual(s['disk_total'], '?')
+
 if __name__ == '__main__': unittest.main()
