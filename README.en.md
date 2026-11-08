@@ -47,14 +47,32 @@ Replace `<skill-name>` with the one you want — e.g. `neat-freak`, `hv-analysis
 
 Install the entire skill directory, including references, scripts, assets and agents metadata when present. Pasting SKILL.md alone provides instructions but cannot replace supporting files or host tools. A chat model without filesystem, browsing or execution tools cannot scan a computer or produce researched files.
 
-Claude Code marketplace installation:
+To install by hand, put the whole directory where your agent reads skills:
+
+| Tool | All projects | One project only |
+|---|---|---|
+| Claude Code | `~/.claude/skills/<skill-name>/` | `.claude/skills/<skill-name>/` |
+| Codex, Gemini CLI, GitHub Copilot and others | `~/.agents/skills/<skill-name>/` | `.agents/skills/<skill-name>/` |
+
+You can also install all six skills as one plugin that follows releases. In Claude Code:
 
 ```text
 /plugin marketplace add KKKKhazix/khazix-skills
 /plugin install khazix-skills@khazix-skills
 ```
 
-Update the catalog with `/plugin marketplace update khazix-skills`, then the plugin with `/plugin update khazix-skills@khazix-skills`. Automatic updates depend on client settings. Avoid duplicate manual and plugin installations.
+To update, open `/plugin` → Installed → khazix-skills → Update now, or run `claude plugin update khazix-skills@khazix-skills` in a terminal. Third-party marketplaces don't auto-update by default; turn it on in `/plugin` → Marketplaces → khazix-skills → Enable auto-update.
+
+In Codex, run in a terminal:
+
+```bash
+codex plugin marketplace add KKKKhazix/khazix-skills
+codex plugin add khazix-skills@khazix-skills
+```
+
+To update: `codex plugin marketplace upgrade khazix-skills`.
+
+Plugin-installed skills are prefixed, e.g. `khazix-skills:leader`. Keep either the plugin or a manual copy, not both, so each skill appears once.
 
 Complete versioned downloads: [Releases](https://github.com/KKKKhazix/khazix-skills/releases). Third-party catalogs may lag or omit resources. This repository maintains the six listed skills; the former skill-manage / self-evolution manager trio is not distributed here.
 
@@ -73,7 +91,7 @@ Complete versioned downloads: [Releases](https://github.com/KKKKhazix/khazix-ski
 
 **It solves exactly one thing: defining the goal.**
 
-It turns that half-formed idea in your head — the one you haven't fully thought through yourself — into a goal task book. Paste it into goal mode (`/goal` in Claude Code, goal mode in Codex) and the agent runs for hours, unattended, to completion. You copy-paste exactly once.
+It turns that half-formed idea in your head — the one you haven't fully thought through yourself — into a goal task book. Paste it into goal mode (`/goal` in both Claude Code and Codex) and the agent runs for hours, unattended, to completion. You copy-paste exactly once.
 
 **Why "goal"**
 
@@ -176,11 +194,11 @@ Lets any SKILL.md-supporting agent pull AI HOT's daily report and all AI news fr
 
 **What it can do**
 
-- Pull today's or a specific date's AI HOT daily report (pre-packaged by topic)
+- Pull today's or a specific date's AI HOT daily report (pre-packaged by topic), plus the latest or a specific weekly and monthly report
 - Pull the selected items stream (daily editorial candidate pool)
 - **See what's hottest right now** (ranked by heat, not reverse-chronological)
-- Check the latest Tibo (Codex) usage resets and reset-card grants
-- Pull by category (models / products / industry / papers / tips)
+- Check the latest Codex, Claude and Antigravity usage resets and reset-card grants
+- Pull by category (models / products / industry / papers / tutorials / opinion)
 - Pull by time window (past 24 hours and last 7 days are natively supported)
 - Keyword / company / topic search ("recent OpenAI releases", "Sora-related", "RAG papers")
 - **Follow a hot story from start to finish** (latest development, report timeline and AI digest)
@@ -330,7 +348,7 @@ You want "good general writing." This skill takes a position. It **refuses** cor
 
 I'm Khazix (数字生命卡兹克), founder of Virxact. I try to share fun, practical AI know-how — and may we always stay curious about the world.
 
-These skills are what I personally use every day. If they help you, a ⭐ is appreciated. Questions or suggestions welcome in Issues / Discussions.
+These skills are what I personally use every day. If they help you, a ⭐ is appreciated. Questions or suggestions welcome in Issues.
 
 ---
 

@@ -16,14 +16,16 @@
 | 用户指令 | `~/.claude/CLAUDE.md` |
 | 项目指令 | `./CLAUDE.md`、`./.claude/CLAUDE.md`、`CLAUDE.local.md` |
 | 路径规则 | `.claude/rules/**/*.md` |
-| 自动记忆 | `~/.claude/projects/<project>/memory/` |
+| 用户路径规则 | `~/.claude/rules/**/*.md` |
+| 自动记忆 | `~/.claude/projects/<project>/memory/`（`autoMemoryDirectory` 设置可改位置） |
 | 自动记忆索引 | 上述目录的 `MEMORY.md` |
-| Skills | `~/.claude/skills/<name>/SKILL.md` 或项目 `.claude/skills/` |
+| Skills | `~/.claude/skills/<name>/SKILL.md` 或项目 `.claude/skills/`；插件里的 Skill 以 `插件名:skill名` 出现 |
 
 当前官方口径：
 
 - CLAUDE.md 全量加载，但建议目标少于约 200 行；越长越消耗注意力并降低遵守度。这是质量预算，不是硬截断线。
 - Claude 自动记忆 `MEMORY.md` 在会话启动时只加载前 200 行或 25KB（先到者）；主题文件按需读取。这个硬限制只属于 Claude 自动记忆，不适用于 Codex 生成记忆。
+- Claude Code 从 `.claude/skills` 体系和插件发现 Skill，官方文档不含 `~/.agents/skills`；装在通用目录的 Skill 要给 Claude Code 用，通常再建一个指向同一真身的 `~/.claude/skills/<name>` 软链。
 - Claude 原生读 CLAUDE.md。已有 AGENTS.md 的项目可用导入或软链同源；方向由项目规则决定，不擅自翻转。
 
 ## OpenAI Codex
@@ -33,12 +35,16 @@
 | Codex home | `$CODEX_HOME`，默认 `~/.codex` |
 | 全局指令 | `$CODEX_HOME/AGENTS.override.md`，不存在时读 `AGENTS.md` |
 | 项目指令 | 从项目根到当前目录逐级找 `AGENTS.override.md`、`AGENTS.md`、配置的 fallback |
-| 全局 Skills | `$CODEX_HOME/skills/<name>/SKILL.md` |
-| 项目 Skills | 项目 `.codex/skills/<name>/`（以当前 Codex 版本和环境为准） |
+| 个人 Skills | `~/.agents/skills/<name>/SKILL.md`（Agent Skills 通用目录） |
+| 项目 Skills | 从当前目录到仓库根逐级的 `.agents/skills/<name>/` |
+| 管理员 / 内置 Skills | `/etc/codex/skills/`；随 Codex 自带的系统 Skill |
+| 插件 Skills | `$CODEX_HOME/plugins/cache/<marketplace>/<plugin>/<version>/`，以 `插件名:skill名` 出现 |
+
+旧版本 Codex 用过 `$CODEX_HOME/skills/`，现行文档已不列这个位置。发现它时按遗留副本处理：核对是否和 `~/.agents/skills` 里的同名 Skill 重复，不当作现役真身。
 
 当前官方口径：项目指令链合并后默认最多 32KiB，由 `project_doc_max_bytes` 控制；越靠近当前目录的指令越晚加载。检查 override 和 fallback，不能只找根目录 AGENTS.md。
 
-某些 Codex 环境还提供 `~/.codex/memories/`、rollout summaries 或 Chronicle 派生索引。这类文件可能由宿主管线生成：
+Codex 记忆默认关闭；开启后存在 `$CODEX_HOME/memories_v2/`（新装默认）或已有的 `$CODEX_HOME/memories/`。某些环境还有 rollout summaries 或 Chronicle 派生索引。这类文件由宿主管线生成：
 
 - 先读当前环境给出的 memory instructions；没有明确授权时只读。
 - 不直接改生成的 `MEMORY.md`、`memory_summary.md`、`raw_memories.md` 或 rollout summary。
@@ -57,7 +63,7 @@ Agent Skills 是开放标准（2025-12 由 Anthropic 开放），已有约 40 �
 
 ## 共存检查
 
-1. 列出实际存在的平台目录和 skill realpath。
+1. 列出实际存在的平台目录（含通用目录 `~/.agents/skills` 和项目 `.agents/skills`）和 skill realpath。
 2. 核对同名 skill 是否软链到同一真身、复制安装、或由更高优先级版本覆盖。
 3. 只改权威真身；复制安装需要明确同步机制，不能假设会自动更新。
 4. 软链在 Windows 或受限环境可能不可用，允许项目采用导入或生成镜像，只要现场规则明确且有一致性门禁。
@@ -66,7 +72,9 @@ Agent Skills 是开放标准（2025-12 由 Anthropic 开放），已有约 40 �
 ## 官方复核入口
 
 - Agent Skills specification: <https://agentskills.io/specification>
-- Agent Skills 兼容产品名录: <https://agentskills.io>（showcase）
+- Agent Skills 兼容产品名录: <https://agentskills.io/clients>
 - Claude Code memory and CLAUDE.md: <https://code.claude.com/docs/en/memory>
-- OpenAI Codex AGENTS.md: <https://developers.openai.com/codex/guides/agents-md/>
+- Claude Code skills: <https://code.claude.com/docs/en/skills>
+- OpenAI Codex AGENTS.md: <https://learn.chatgpt.com/docs/agent-configuration/agents-md>
+- OpenAI Codex skills: <https://learn.chatgpt.com/docs/build-skills>
 - OpenAI Codex Memories: <https://learn.chatgpt.com/docs/customization/memories>

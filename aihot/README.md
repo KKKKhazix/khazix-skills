@@ -116,7 +116,7 @@ AIHOT 目前能查的全部内容，以 [给 Agent 的使用说明](https://aiho
 - AIHOT 服务与数据输出适用 [AIHOT 公开使用规则](https://aihot.news/terms)。匿名、无需 API Key 只说明技术访问方式，不代表所有用途均获许可。
 - 第三方原文及全文版权仍归原作者，不因经过 AIHOT 而改变。
 - 个人非商业、公益非商业和组织内部使用免费。面向外部的商业产品、收费服务、客户交付、代理接口、数据转售、公开镜像、批量公开再分发或对外模型产品须先取得书面授权；仅标注「数据来源：AIHOT」不代表已取得授权。
-- 授权联系 `wzglyay@virxact.com`。attribution 与 canonical 继续用于机器识别和追溯；重要引用回第三方原文核对。
+- 授权联系 `agent@virxact.com`。attribution 与 canonical 继续用于机器识别和追溯；重要引用回第三方原文核对。
 
 详细接入文档：[aihot.news/agent](https://aihot.news/agent)
 
