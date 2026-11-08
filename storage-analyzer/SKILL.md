@@ -36,7 +36,7 @@ python3 "$STORAGE_SKILL_DIR/scripts/scan.py" > storage_scan.json
 ```
 
 `scan.py` 自动识别系统（`sys.platform`）：
-- **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du` 算大小。
+- **macOS**：扫 home、library、caches、containers、group_containers、app_support、applications、downloads、dev_caches，用 `du -x` 算大小（不跨卷）。挂载点会被跳过并写进 `warnings`，例如 Xcode 的 `~/Library/Developer/CoreDevice/DeviceFS`：它是模拟器/设备文件系统的虚拟挂载，显示几十 GB 但不占本盘空间，不要当成清理项。二次深入查看时同样用 `du -x`。
 - **Windows**：扫 user_profile、appdata_local、appdata_roaming、temp、downloads、program_files(_x86)、dev_caches，用 `os.scandir` 算大小；`system.disks` 含所有盘符。
 
 输出 JSON：`system`（系统/磁盘信息，含 `disk_name` 主盘名 + `disks` 全部盘）+ `groups`（各组子目录大小，已降序、过滤 50MB 以下）。Windows 同次扫描复用子目录统计，避免重复遍历。顶层分组存在父子包含关系，不能直接相加；可释放空间还受硬链接、压缩和回收站保留影响。读取 `warnings` 并在报告中说明未读全的路径。读不到的目录标 `denied`，需在报告里列出并提示遗漏体量。
