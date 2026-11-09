@@ -43,10 +43,11 @@ def main() -> None:
     assert re.search(r'version: "\d+\.\d+\.\d+"', parts[1]), "skill version metadata is missing"
 
     # Middle-tier trigger contract: explicit names, intent phrases, and negatives all present.
+    # description 已统一为中文，意图条款与排除条款断言同步为中文字面，校验意图不变。
     for marker in EXPLICIT_MARKERS:
         assert marker in description, f"description lost explicit trigger marker: {marker}"
-    assert "knowledge-closeout intent" in description, "description lost intent-trigger clause"
-    assert "Do not trigger" in description, "description lost negative-trigger clause"
+    assert "知识收尾意图" in description, "description lost intent-trigger clause"
+    assert "不触发" in description, "description lost negative-trigger clause"
 
     references = set(re.findall(r"\]\((references/[^)]+)\)", text))
     assert references == {
