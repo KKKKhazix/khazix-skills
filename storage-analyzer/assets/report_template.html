@@ -339,7 +339,7 @@ function delBlock(it){
 
 function postAction(wrap, paths, mode){
   const status = wrap.querySelector('.del-status');
-  const btns = wrap.querySelectorAll('.del-btn');
+  const btns = wrap.closest('.sec').querySelectorAll('.del-btn');
   status.textContent = '处理中…'; status.className='del-status';
   btns.forEach(b=>b.disabled=true);
   return fetch(DELETE.endpoint, {method:'POST', headers:{'Content-Type':'application/json'},
