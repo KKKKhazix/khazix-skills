@@ -8,7 +8,7 @@
     {
       "name": "khazix-skills",
       "description": "Six practical skills for research, writing, project closeout and storage analysis.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "source": "./",
       "strict": false,
       "skills": [
