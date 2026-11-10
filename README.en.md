@@ -78,6 +78,16 @@ Complete versioned downloads: [Releases](https://github.com/KKKKhazix/khazix-ski
 
 ---
 
+## Maintenance and sources
+
+Each of the six skill directories owns its instructions and supporting resources. `.claude-plugin/marketplace.json` distributes them as one plugin.
+
+- `aihot/` mirrors the [official AIHOT distribution](https://aihot.news/aihot-skill/README.md) byte for byte. The 2.0.0 runtime package (`SKILL.md`, `LICENSE`, `agents/openai.yaml`) is frozen; new capabilities evolve in the server-side `/api/v1/agent` guide. Update installation documentation or the installer in the AIHOT source under its compatibility rules, deploy, then sync here. Do not patch the mirror or regenerate checksums independently.
+- The other five skills are maintained here. `neat-freak/evals/fixtures/` contains test projects, not company repositories awaiting cleanup.
+- [human-writing](https://github.com/KKKKhazix/human-writing) is a separately maintained general Chinese writing skill. `khazix-writer/` captures Khazix's personal writing style; neither is a mirror of the other.
+
+Submit changes through pull requests. [Validate skills](.github/workflows/validate.yml) checks tests, package contents and evaluation fixtures on Ubuntu, macOS and Windows. README-only changes do not change skill versions or existing releases; update release packages when installed content changes.
+
 ## ✨ Skills
 
 <a id="-skills"></a>
