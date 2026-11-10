@@ -84,7 +84,7 @@ codex plugin add khazix-skills@khazix-skills
 
 六个 Skill 各自的目录包含指令和配套资源，`.claude-plugin/marketplace.json` 只负责把它们作为一个插件分发。
 
-- `aihot/` 是 [AIHOT 官方安装包](https://aihot.news/aihot-skill/README.md)的镜像，包含说明、安装器和校验清单。先在 AIHOT 源项目改好并上线，再整体同步这里；不要只改镜像或单独重算校验值。
+- `aihot/` 是 [AIHOT 官方发行文件](https://aihot.news/aihot-skill/README.md)的镜像，保持逐字节一致。2.0.0 运行包的 `SKILL.md`、`LICENSE`、`agents/openai.yaml` 已固定，不再修改；新能力在服务端 `/api/v1/agent` 的使用说明中演进。安装说明或安装器需要更新时，先在 AIHOT 源项目按兼容规则改好并上线，再同步这里；不要只改镜像或单独重算校验值。
 - 其余五个 Skill 的指令、脚本和资源在本仓库维护。`neat-freak/evals/fixtures/` 是评测用的假项目，不是待清理的公司仓库。
 - [human-writing](https://github.com/KKKKhazix/human-writing) 是独立维护的通用中文写作 Skill；本仓库的 `khazix-writer/` 维护卡兹克个人写作风格，两者不是镜像。
 
