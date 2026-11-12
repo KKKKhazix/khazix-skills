@@ -80,6 +80,18 @@ codex plugin add khazix-skills@khazix-skills
 
 ---
 
+## 维护与源头
+
+[安装与清理状态、写入入口](STATES.md)
+
+六个 Skill 各自的目录包含指令和配套资源，`.claude-plugin/marketplace.json` 只负责把它们作为一个插件分发。
+
+- `aihot/` 是 [AIHOT 官方发行文件](https://aihot.news/aihot-skill/README.md)的镜像，保持逐字节一致。2.0.0 运行包的 `SKILL.md`、`LICENSE`、`agents/openai.yaml` 已固定，不再修改；新能力在服务端 `/api/v1/agent` 的使用说明中演进。安装说明或安装器需要更新时，先在 AIHOT 源项目按兼容规则改好并上线，再同步这里；不要只改镜像或单独重算校验值。
+- 其余五个 Skill 的指令、脚本和资源在本仓库维护。`neat-freak/evals/fixtures/` 是评测用的假项目，不是待清理的公司仓库。
+- [human-writing](https://github.com/KKKKhazix/human-writing) 是独立维护的通用中文写作 Skill；本仓库的 `khazix-writer/` 维护卡兹克个人写作风格，两者不是镜像。
+
+改动走合并请求，[Validate skills](.github/workflows/validate.yml) 在 Ubuntu、macOS、Windows 检查测试、安装包和评测材料。只改首页不改 Skill 版本或已有 Release；实际安装内容变化时再更新发布包。
+
 ## ✨ Skills
 
 <a id="-skills"></a>
@@ -164,7 +176,7 @@ CleanMyMac 是个写死规则的软件，扫到一个 3.8G 的 Chrome 文件夹�
 
 **铁律**
 
-全程只读扫描，绝不擅自动手。网页删除逐次确认；用户已明确授权具体清理对象时，Agent 也可代为执行，无需重复确认。本地服务跑在 127.0.0.1 + 随机端口 + token，安全模型上三套白名单分级（绿灯能删、橙灯只能移废纸篓、红灯只能打开）。
+全程只读扫描，绝不擅自动手。网页删除逐次确认；用户已明确授权具体清理对象时，Agent 也可代为执行，无需重复确认。本地服务跑在 127.0.0.1 + 随机端口 + token，安全模型上三套白名单分级（绿灯能删、黄灯只能移废纸篓、红灯只能打开）。
 
 支持 macOS / Windows / Linux（Linux 目前在 Ubuntu + GNOME 上实测）。扫描、删除边界和只读缓存修复由跨平台 CI 验证；回收站桌面交互需在当前系统核实。服务连续 30 分钟无请求自动退出。
 
@@ -325,7 +337,7 @@ storage analysis
 **它会做什么**
 
 - 完整的写作风格规则（节奏、叙事、判断、修辞）
-- 四层自检体系（结构、节奏、内容、文字）
+- 四层自检体系（硬性规则、风格一致性、内容质量、活人感终审）
 - 一套风格示例库（可以让 AI 直接对照）
 
 **怎么触发**

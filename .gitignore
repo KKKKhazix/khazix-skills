@@ -13,14 +13,11 @@
 # Local Claude Code project settings
 .claude/settings.local.json
 
-# Internal project instructions (not for public repo)
-# AGENTS.md is a symlink to CLAUDE.md — same secret content, must also be ignored
+# Internal project instructions (not for public repo). AGENTS.md holds the public maintainer rules and is tracked.
 CLAUDE.md
-AGENTS.md
 
-# …except eval fixtures: those CLAUDE.md/AGENTS.md files are test material, not secrets
+# …except eval fixtures: those CLAUDE.md files are test material, not secrets
 !*/evals/fixtures/**/CLAUDE.md
-!*/evals/fixtures/**/AGENTS.md
 
 __pycache__/
 *.pyc
