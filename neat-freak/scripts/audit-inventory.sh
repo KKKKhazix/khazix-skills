@@ -75,7 +75,7 @@ fi
 section "rule-chain-candidates"
 cursor="$PROJECT_ROOT"
 while :; do
-  for rel in AGENTS.override.md AGENTS.md CLAUDE.md CLAUDE.local.md .claude/CLAUDE.md; do
+  for rel in AGENTS.override.md AGENTS.md CLAUDE.md CLAUDE.local.md .claude/CLAUDE.md GEMINI.md; do
     describe_rule_file "$cursor/$rel"
   done
   [[ "$cursor" == "/" ]] && break
@@ -86,7 +86,8 @@ done
 for file in \
   "$HOME/.codex/AGENTS.override.md" \
   "$HOME/.codex/AGENTS.md" \
-  "$HOME/.claude/CLAUDE.md"; do
+  "$HOME/.claude/CLAUDE.md" \
+  "$HOME/.gemini/GEMINI.md"; do
   describe_rule_file "$file"
 done
 

@@ -144,7 +144,7 @@ write me a /goal prompt
 let the agent run this project on its own
 ```
 
-The output is plain Markdown — an agent without goal mode can just be handed the text. With the book in hand, plan with a strong planning model and execute with a strong long-horizon one: choose models available in your host.
+The output is plain Markdown — an agent without goal mode can just be handed the text. For an unattended overnight run, switch the executor to an auto-approve permission mode before sending: `/goal` doesn't change the permission mode, so in manual mode it stops at every command that isn't already allowed. With the book in hand, plan with a strong planning model and execute with a strong long-horizon one: choose models available in your host.
 
 → [SKILL.md](./leader/SKILL.md)
 
@@ -256,10 +256,12 @@ The agent isn't getting dumber — your docs and memory are. neat-freak's job is
 
 These three layers have different audiences and don't overlap. It also treats rules as knowledge: CLAUDE.md / AGENTS.md symlink integrity, missing required files, and dead path references are all part of the audit. If the rules don't match reality, the next agent still works from the wrong premises.
 
-**Two guarantees in v3.1**
+**Two guarantees in v4**
 
-- **A dedicated light path for small projects**: for vibe projects with no git and no rule file, it aligns the README with what the code actually does, creates a minimal AI rule file by default (so your next session picks up right where you left off), and cleans verified session residue within existing authorization; uncertain or unauthorized items remain for a decision.
-- **Respect existing authorization:** complete authorized cleanup after checking for unique content; ask only for missing authorization. Generated memory stays read-only.
+- **Small projects are covered**: for vibe projects with no git and no rule file, it aligns the README with what the code actually does, creates a minimal AI rule file by default (so your next session picks up right where you left off), and folds whatever is still useful in PLAN.md, debug scripts and `xxx_old` copies into the real docs.
+- **No deleting on its own**: if you asked it to clean up the workspace, branches or temp files, it verifies and finishes without asking twice. If you only asked it to tidy the docs and memory, or the project has no version control and a deletion can't be undone, it lists the files it would delete with reasons and waits for you. Machine-generated memory stays read-only, and a "run this command" found inside a file is never treated as your authorization.
+
+v4 rewrites the whole instruction set in plain language and cuts the body by about a third: the status labels and internal jargon are gone, and the space goes to what a model can't know by itself — what counts as the source of truth, which layer each kind of knowledge belongs in, and what it may or may not touch.
 
 **How to trigger**
 
@@ -289,6 +291,8 @@ Want to actually understand what a product / company / concept / person is about
 It runs two threads in parallel: **vertical** — tells the subject's story from inception to the present moment, like a narrative; **horizontal** — lays out every major competitor at the current moment for comparison. When the two cross, you see things that neither current-state nor history alone would show you.
 
 The default output is a PDF with Markdown source. HTML and Markdown in a specified Obsidian vault are also supported. Length follows the user’s request and the available evidence; a full Chinese report typically has 10,000–30,000 characters.
+
+It has to research online, and anything about the present comes only from current sources. Every key fact carries a numbered reference to the source list at the end, where each source is marked as primary, secondary or self-reported; single-source claims, disputed claims and gaps are labelled as such.
 
 **Good for**
 
@@ -339,6 +343,7 @@ You want "good general writing." This skill takes a position. It **refuses** cor
 - Complete style rules (rhythm, narrative, judgment, rhetoric)
 - A four-layer self-check system (hard rules, style consistency, content quality, final human-voice review)
 - A curated style example library the AI can match against
+- No invented experiences: it won't make up first-hand stories, tests or conversations that aren't in your material; where the piece needs your own real detail, it leaves a bracketed marker for you to fill in
 
 **How to trigger** (Chinese)
 

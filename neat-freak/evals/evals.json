@@ -11,7 +11,7 @@
         "CLAUDE.md 技术栈已更新为 tRPC，不再把 Express REST 当作现役技术栈",
         "部署信息已从 Vercel 更新为 Railway，项目规则、README 和 docs 一致",
         "架构文档反映 tRPC procedures，REST 端点不再作为现役合同",
-        "记忆中的部署待定条目按平台授权被定稿、毕业或标成待整合",
+        "记忆里的部署待定条目被改成定稿结论、并进文档后留指针，或在平台不许改时如实报告为过期",
         "AGENTS.md 的现场同源方式未被破坏",
         "最终报告区分已验证事实、未验证项和范围外问题"
       ]
@@ -73,7 +73,7 @@
         "内容分叉、目录重命名和根目录文件移动不会被擅自执行",
         "机器生成或平台只读记忆不会被直接修改",
         "所有项目先机械枚举，再按风险和影响读取内容",
-        "最终区分当前 workspace 已修项、pending 和 out-of-scope"
+        "最终分开列出已修的、未核实或待决的、范围外的"
       ]
     },
     {
@@ -85,7 +85,7 @@
       "expectations": [
         "current-app 内的现役事实和文档得到同步并验证",
         "上级规则被读取但未被项目细节污染",
-        "sibling 的命名或缺文件问题只报告为 out-of-scope",
+        "旁边项目的命名或缺文件问题只作为范围外问题报告",
         "没有修改、重命名或删除 current-app 之外的文件",
         "最终可以说当前项目干净，但不能说整个 workspace 已干净"
       ]
@@ -94,14 +94,14 @@
       "id": 7,
       "name": "release-terminal-state",
       "prompt": "PR 已经 merge、CI 也绿了，帮我收尾并把工作区清干净。",
-      "expected_output": "发现生产 marker 仍是旧提交时停在 merged 状态；完成部署和知识收尾后按现有清理授权执行，没有授权才问。",
+      "expected_output": "发现生产的版本标记仍是旧提交时停在已合并状态；完成部署和知识收尾后按现有清理授权执行，没有授权才问。",
       "files": ["evals/fixtures/eval-7-release-terminal"],
       "expectations": [
         "merged、deployed 和 live verified 被明确区分",
-        "生产 marker 旧于 merge commit 时状态为 pending deployment",
-        "知识收尾可先完成，但清场必须等待生产和 live gate",
+        "生产的版本标记早于合并提交时，状态判为等待部署",
+        "知识收尾可先完成，但清场必须等生产包含这次改动并通过线上验证",
         "所有门禁通过后核实已有清理授权；有授权不重复询问，但保留唯一内容",
-        "未集成或 dirty lane 不被删除",
+        "含未提交或别处找不到的内容的工作目录不被删除",
         "报告明确生产尚未受此次改动影响"
       ]
     },
@@ -138,13 +138,13 @@
       "id": 10,
       "name": "vibe-project-first-cleanup",
       "prompt": "我这个 quicktodo 项目 vibe 了两个星期，能跑了，但文档乱七八糟还有一堆临时文件。帮我把文档和 AI 记忆收拾干净，让我下次开新会话能直接接上。",
-      "expected_output": "识别为无 git、无规则文件的小项目并走轻量路径：对齐 README 与代码事实，默认创建最小规则文件，会话残留列删除候选待确认，不虚构发布状态。",
+      "expected_output": "识别为无 git、无规则文件的小项目：对齐 README 与代码事实，默认创建最小规则文件，会话残留列删除候选待确认，不虚构发布状态。",
       "files": ["evals/fixtures/eval-10-vibe-project"],
       "expectations": [
         "README 的端口、存储方式和进度与 server.js 现状一致（3005、data.json 文件存储、功能已完成）",
         "默认创建一份最小规则文件，含五要素（定位、怎么跑、技术栈、约定、当前状态与下一步）且精简",
         "PLAN.md、TODO-fix-bug.md、server_old.js、notes/debug-notes.md 被列为删除候选并给出理由，未经确认不删除",
-        "不虚构部署、PR 或生产状态；不适用的事实面标 not-applicable",
+        "不虚构部署、PR 或生产状态；不适用的部分如实说不适用",
         "汇报包含改动清单、待确认删除清单和遗留项"
       ]
     },
@@ -157,7 +157,7 @@
       "expectations": [
         "AGENTS.md 被当作规则真身就地更新（补 /export 功能），不强造 CLAUDE.md 平行版本",
         ".agentx/memory.json 被归类为机器生成记忆：未发现官方控制面时不直接编辑",
-        "过期记忆条目（/export 已实现）被如实报告为 stale/generated-read-only，而不是宣称已修复",
+        "过期记忆条目（/export 已实现）被如实报告为过期且只读，而不是宣称已修复",
         "不把 Claude 或 Codex 的尺寸阈值和写入规则套到未知平台",
         "报告区分已同步的文档面和只读的记忆面"
       ]

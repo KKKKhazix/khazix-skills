@@ -1,6 +1,6 @@
-# Claude / Codex 路径、加载和体量速查
+# 各平台的规则文件、记忆和 Skill 放在哪
 
-平台机制会变。先探测当前环境和本机规则；涉及写入或尺寸上限时，优先核对当前官方文档或本机工具输出，不把这张表当永远不变的事实。
+平台机制会变，这份速查核对于 2026-11。先看当前环境和本机规则实际是什么样；涉及能不能写、尺寸上限这类事，以当前官方文档或本机工具的输出为准（文末有入口）。
 
 ## 通用原则
 
@@ -14,7 +14,7 @@
 | 用途 | 常见路径 / 规则 |
 |---|---|
 | 用户指令 | `~/.claude/CLAUDE.md` |
-| 项目指令 | `./CLAUDE.md`、`./.claude/CLAUDE.md`、`CLAUDE.local.md` |
+| 项目指令 | `./CLAUDE.md`、`./.claude/CLAUDE.md`、`CLAUDE.local.md`；这三个都没有时读 `AGENTS.md`（见下） |
 | 路径规则 | `.claude/rules/**/*.md` |
 | 用户路径规则 | `~/.claude/rules/**/*.md` |
 | 自动记忆 | `~/.claude/projects/<project>/memory/`（`autoMemoryDirectory` 设置可改位置） |
@@ -26,7 +26,10 @@
 - CLAUDE.md 全量加载，但建议目标少于约 200 行；越长越消耗注意力并降低遵守度。这是质量预算，不是硬截断线。
 - Claude 自动记忆 `MEMORY.md` 在会话启动时只加载前 200 行或 25KB（先到者）；主题文件按需读取。这个硬限制只属于 Claude 自动记忆，不适用于 Codex 生成记忆。
 - Claude Code 从 `.claude/skills` 体系和插件发现 Skill，官方文档不含 `~/.agents/skills`；装在通用目录的 Skill 要给 Claude Code 用，通常再建一个指向同一真身的 `~/.claude/skills/<name>` 软链。
-- Claude 原生读 CLAUDE.md。已有 AGENTS.md 的项目可用导入或软链同源；方向由项目规则决定，不擅自翻转。
+- Claude Code 2.1.277 起能直接读 `AGENTS.md`，但默认只在工作目录及其上级都没有 `CLAUDE.md`、`.claude/CLAUDE.md`、`CLAUDE.local.md` 时才读。所以给一个只有 AGENTS.md 的项目新建 CLAUDE.md 或 CLAUDE.local.md，会让 Claude Code 不再读 AGENTS.md。两份都要生效时，在 CLAUDE.md 里写 `@AGENTS.md` 导入、用软链，或把设置里的 Project instructions 改成 `claude-md-and-agents-md`。更早的版本只读 CLAUDE.md。
+- `AGENTS.override.md`、`AGENTS.local.md` 和 `.agents/` 下的文件 Claude Code 不读。
+- 项目已经有 CLAUDE.md 或 AGENTS.md 之一，就以它为真身。哪份是真身、另一份怎么同源（导入还是软链），按项目自己的声明来，不擅自翻转，也不另建内容平行的第二份。
+- `@路径` 导入相对于写它的那个文件解析，最多嵌套四层。
 
 ## OpenAI Codex
 
@@ -44,11 +47,11 @@
 
 当前官方口径：项目指令链合并后默认最多 32KiB，由 `project_doc_max_bytes` 控制；越靠近当前目录的指令越晚加载。检查 override 和 fallback，不能只找根目录 AGENTS.md。
 
-Codex 记忆默认关闭；开启后存在 `$CODEX_HOME/memories_v2/`（新装默认）或已有的 `$CODEX_HOME/memories/`。某些环境还有 rollout summaries 或 Chronicle 派生索引。这类文件由宿主管线生成：
+Codex 记忆默认关闭；开启后存在 `$CODEX_HOME/memories_v2/`（新装默认）或已有的 `$CODEX_HOME/memories/`。某些环境还有 rollout summaries 或 Chronicle 派生索引。这类文件由 Codex 自己生成：
 
-- 先读当前环境给出的 memory instructions；没有明确授权时只读。
+- 先读当前环境给出的记忆说明；没有明确授权时只读。
 - 不直接改生成的 `MEMORY.md`、`memory_summary.md`、`raw_memories.md` 或 rollout summary。
-- 用户明确要求更新记忆且环境允许时，只使用该 Codex 环境规定的 correction input，或通过官方 `/memories`、设置和 `memories.*` 配置控制生成与使用，再等待宿主 consolidation；不要自设文件尺寸目标、compact candidate 或项目级生成记忆门禁。
+- 用户明确要求更新记忆且环境允许时，只走这个 Codex 环境规定的纠正入口，或用官方的 `/memories`、设置和 `memories.*` 配置控制记忆的生成与使用，然后等 Codex 自己重新整合。不给生成的记忆自定尺寸目标、压缩格式或项目级的检查。
 
 发现 `TEAM_GUIDE.md`、`.agents.md` 等文件时，只有它们出现在 Codex fallback 配置中才把它们当指令文件。
 

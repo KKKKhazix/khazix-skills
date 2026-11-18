@@ -210,6 +210,21 @@ a {
 """
 
 
+META_KEYS = ("研究时间", "所属领域", "研究对象类型")
+
+
+def split_meta(md_text):
+    """取出封面用的元信息行。它是引用行（> 开头）时从正文里拿掉，免得封面和正文各印一遍。"""
+    lines = md_text.split("\n")
+    for index, line in enumerate(lines):
+        stripped = line.strip().lstrip(">").strip()
+        if any(key in stripped for key in META_KEYS):
+            if line.lstrip().startswith(">"):
+                del lines[index]
+            return "\n".join(lines), stripped
+    return md_text, ""
+
+
 def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深度研究报告",
                meta_line="", author=""):
     """将 Markdown 转为带封面的 HTML"""
@@ -262,6 +277,10 @@ def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深
 
 
 def main():
+    # Windows 下输出被重定向时默认不是 UTF-8，打印中文会报错
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="横纵分析法报告 Markdown → HTML / PDF")
     parser.add_argument("input", help="输入的 Markdown 文件路径")
     parser.add_argument("output", help="输出的 .html 或 .pdf 文件路径")
@@ -272,13 +291,7 @@ def main():
     with open(args.input, "r", encoding="utf-8") as f:
         md_text = f.read()
 
-    # 提取元信息
-    meta_line = ""
-    for line in md_text.split("\n"):
-        stripped = line.strip().lstrip(">").strip()
-        if "研究时间" in stripped or "所属领域" in stripped or "研究对象类型" in stripped:
-            meta_line = stripped
-            break
+    md_text, meta_line = split_meta(md_text)
 
     html = md_to_html(md_text, title=args.title or "横纵分析报告", meta_line=meta_line, author=args.author)
 
