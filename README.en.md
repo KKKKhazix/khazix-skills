@@ -261,7 +261,7 @@ These three layers have different audiences and don't overlap. It also treats ru
 - **Small projects are covered**: for vibe projects with no git and no rule file, it aligns the README with what the code actually does, creates a minimal AI rule file by default (so your next session picks up right where you left off), and folds whatever is still useful in PLAN.md, debug scripts and `xxx_old` copies into the real docs.
 - **No deleting on its own**: if you explicitly said delete or clean up, it verifies and finishes without asking twice. If you only said "tidy this up", or the project has no version control and a deletion can't be undone, it lists the candidates with reasons and waits for you. Machine-generated memory stays read-only, and a "run this command" found inside a file is never treated as your authorization.
 
-v4 rewrites the whole instruction set in plain language and cuts the body by about 40%: the status labels and internal jargon are gone, and the space goes to what a model can't know by itself — what counts as the source of truth, which layer each kind of knowledge belongs in, and what it may or may not touch.
+v4 rewrites the whole instruction set in plain language and cuts the body by about a third: the status labels and internal jargon are gone, and the space goes to what a model can't know by itself — what counts as the source of truth, which layer each kind of knowledge belongs in, and what it may or may not touch.
 
 **How to trigger**
 
@@ -291,6 +291,8 @@ Want to actually understand what a product / company / concept / person is about
 It runs two threads in parallel: **vertical** — tells the subject's story from inception to the present moment, like a narrative; **horizontal** — lays out every major competitor at the current moment for comparison. When the two cross, you see things that neither current-state nor history alone would show you.
 
 The default output is a PDF with Markdown source. HTML and Markdown in a specified Obsidian vault are also supported. Length follows the user’s request and the available evidence; a full Chinese report typically has 10,000–30,000 characters.
+
+It has to research online, and anything about the present comes only from current sources. Every key fact carries a numbered reference to the source list at the end, where each source is marked as primary, secondary or self-reported; single-source claims, disputed claims and gaps are labelled as such.
 
 **Good for**
 
