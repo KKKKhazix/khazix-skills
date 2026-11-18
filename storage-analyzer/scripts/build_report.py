@@ -10,8 +10,10 @@ Schema (all sections optional except system):
 {
   "generated_at": "2026-05-28 12:00:00",
   "scan_seconds": 42.1,
-  "system": {os, build, arch, user, home, filesystem,
-             disk_total, disk_used, disk_free, purgeable},
+  "system": scan.py 输出的 system 对象原样照抄，不删字段：
+            {os, build, arch, user, home, filesystem,
+             disk_total, disk_used, disk_free, purgeable,
+             disk_name, disks:[{name,total,used,free}]},
   "top5": [{rank, tier(green|yellow|red), size, type, name, path, note}],
   "green":  [{name, path, size_estimate, kill_processes:[], trash_paths:[...], clear_contents?, commands:[{label,cmd}]}],
   "yellow": [{name, path, size, content_profile, why_manual, disposal, risk, trash_paths:[...]?, clear_contents?, open_note?}],
