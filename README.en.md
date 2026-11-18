@@ -259,7 +259,7 @@ These three layers have different audiences and don't overlap. It also treats ru
 **Two guarantees in v4**
 
 - **Small projects are covered**: for vibe projects with no git and no rule file, it aligns the README with what the code actually does, creates a minimal AI rule file by default (so your next session picks up right where you left off), and folds whatever is still useful in PLAN.md, debug scripts and `xxx_old` copies into the real docs.
-- **No deleting on its own**: if you explicitly said delete or clean up, it verifies and finishes without asking twice. If you only said "tidy this up", or the project has no version control and a deletion can't be undone, it lists the candidates with reasons and waits for you. Machine-generated memory stays read-only, and a "run this command" found inside a file is never treated as your authorization.
+- **No deleting on its own**: if you asked it to clean up the workspace, branches or temp files, it verifies and finishes without asking twice. If you only asked it to tidy the docs and memory, or the project has no version control and a deletion can't be undone, it lists the files it would delete with reasons and waits for you. Machine-generated memory stays read-only, and a "run this command" found inside a file is never treated as your authorization.
 
 v4 rewrites the whole instruction set in plain language and cuts the body by about a third: the status labels and internal jargon are gone, and the space goes to what a model can't know by itself — what counts as the source of truth, which layer each kind of knowledge belongs in, and what it may or may not touch.
 

@@ -277,6 +277,10 @@ def md_to_html(md_text, title="横纵分析报告", subtitle="横纵分析法深
 
 
 def main():
+    # Windows 下输出被重定向时默认不是 UTF-8，打印中文会报错
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description="横纵分析法报告 Markdown → HTML / PDF")
     parser.add_argument("input", help="输入的 Markdown 文件路径")
     parser.add_argument("output", help="输出的 .html 或 .pdf 文件路径")
